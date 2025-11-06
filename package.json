@@ -1,0 +1,32 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild overtime-tracker.tsx --bundle --outfile=dist/bundle.js --loader:.tsx=tsx",
+    "start": "esbuild overtime-tracker.tsx --bundle --outfile=dist/bundle.js --servedir=."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ertugerata/fazlamesai.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ertugerata/fazlamesai/issues"
+  },
+  "homepage": "https://github.com/ertugerata/fazlamesai#readme",
+  "dependencies": {
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "esbuild": "^0.25.12",
+    "lucide-react": "^0.552.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript": "^5.9.3",
+    "xlsx": "^0.18.5"
+  }
+}

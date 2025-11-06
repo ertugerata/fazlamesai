@@ -1,12 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
 import { Calendar, Users, Clock, Download, Upload, Plus, Trash2, FileUp } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
-export default function OvertimeTracker() {
-  const [employees, setEmployees] = useState([]);
-  const [workLogs, setWorkLogs] = useState({});
+function OvertimeTracker() {
+  const [employees, setEmployees] = useState(() => {
+    const saved = localStorage.getItem('employees');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [workLogs, setWorkLogs] = useState(() => {
+    const saved = localStorage.getItem('workLogs');
+    return saved ? JSON.parse(saved) : {};
+  });
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
-  const [holidays, setHolidays] = useState([]);
+  const [holidays, setHolidays] = useState(() => {
+    const saved = localStorage.getItem('holidays');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [activeTab, setActiveTab] = useState('employees');
   
   const [newEmployee, setNewEmployee] = useState({ name: '', id: '' });
@@ -19,6 +29,18 @@ export default function OvertimeTracker() {
     '2025-09-07', '2025-09-08', '2025-10-29', '2025-12-02', '2025-12-03',
     '2025-12-04', '2025-12-05'
   ];
+
+  useEffect(() => {
+    localStorage.setItem('employees', JSON.stringify(employees));
+  }, [employees]);
+
+  useEffect(() => {
+    localStorage.setItem('workLogs', JSON.stringify(workLogs));
+  }, [workLogs]);
+
+  useEffect(() => {
+    localStorage.setItem('holidays', JSON.stringify(holidays));
+  }, [holidays]);
 
   const handleEmployeeFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -220,7 +242,7 @@ export default function OvertimeTracker() {
 
           {activeTab === 'employees' && (
             <div className="space-y-6">
-              <div className="bg-indigo-50 p-6 rounded-lg">
+              <div className="bg-indigo-50 p-6 rounded-lg" data-testid="single-employee-form">
                 <h3 className="font-semibold text-lg mb-4">Tek Çalışan Ekle</h3>
                 <div className="flex gap-3">
                   <input
@@ -463,3 +485,7 @@ export default function OvertimeTracker() {
     </div>
   );
 }
+
+const container = document.getElementById('root');
+const root = createRoot(container!);
+root.render(<OvertimeTracker />);
