@@ -19,15 +19,40 @@ function OvertimeTracker() {
   });
   const [activeTab, setActiveTab] = useState('employees');
   
+  const [dayRate, setDayRate] = useState(() => {
+    const saved = localStorage.getItem('dayRate');
+    return saved ? JSON.parse(saved) : 100;
+  });
+  const [eveningRate, setEveningRate] = useState(() => {
+    const saved = localStorage.getItem('eveningRate');
+    return saved ? JSON.parse(saved) : 120;
+  });
+
   const [newEmployee, setNewEmployee] = useState({ name: '', id: '' });
   const [bulkEmployees, setBulkEmployees] = useState('');
   
   const officialHolidays2025 = [
-    '2025-01-01', '2025-03-31', '2025-04-01', '2025-04-02', '2025-04-03',
-    '2025-04-23', '2025-05-01', '2025-05-19', '2025-06-27', '2025-06-28',
-    '2025-06-29', '2025-06-30', '2025-08-30', '2025-09-05', '2025-09-06',
-    '2025-09-07', '2025-09-08', '2025-10-29', '2025-12-02', '2025-12-03',
-    '2025-12-04', '2025-12-05'
+    { date: '2025-01-01', description: 'Yılbaşı' },
+    { date: '2025-03-31', description: 'Ramazan Bayramı' },
+    { date: '2025-04-01', description: 'Ramazan Bayramı' },
+    { date: '2025-04-02', description: 'Ramazan Bayramı' },
+    { date: '2025-04-23', description: 'Ulusal Egemenlik' },
+    { date: '2025-05-01', description: 'Emek ve Dayanışma' },
+    { date: '2025-05-19', description: 'Gençlik ve Spor' },
+    { date: '2025-06-27', description: 'Kurban Bayramı' },
+    { date: '2025-06-28', description: 'Kurban Bayramı' },
+    { date: '2025-06-29', description: 'Kurban Bayramı' },
+    { date: '2025-06-30', description: 'Kurban Bayramı' },
+    { date: '2025-08-30', description: 'Zafer Bayramı' },
+    { date: '2025-09-05', description: 'Kurban Bayramı' },
+    { date: '2025-09-06', description: 'Kurban Bayramı' },
+    { date: '2025-09-07', description: 'Kurban Bayramı' },
+    { date: '2025-09-08', description: 'Kurban Bayramı' },
+    { date: '2025-10-29', description: 'Cumhuriyet Bayramı' },
+    { date: '2025-12-02', description: 'Ramazan Bayramı' },
+    { date: '2025-12-03', description: 'Ramazan Bayramı' },
+    { date: '2025-12-04', description: 'Ramazan Bayramı' },
+    { date: '2025-12-05', description: 'Ramazan Bayramı' }
   ];
 
   useEffect(() => {
@@ -41,6 +66,14 @@ function OvertimeTracker() {
   useEffect(() => {
     localStorage.setItem('holidays', JSON.stringify(holidays));
   }, [holidays]);
+
+  useEffect(() => {
+    localStorage.setItem('dayRate', JSON.stringify(dayRate));
+  }, [dayRate]);
+
+  useEffect(() => {
+    localStorage.setItem('eveningRate', JSON.stringify(eveningRate));
+  }, [eveningRate]);
 
   const handleEmployeeFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -137,7 +170,8 @@ function OvertimeTracker() {
       const dayOfWeek = date.getDay();
       const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       
-      if (dayOfWeek >= 1 && dayOfWeek <= 5 && !holidays.includes(dateStr) && !officialHolidays2025.includes(dateStr)) {
+      const isOfficialHoliday = officialHolidays2025.some(h => h.date === dateStr);
+      if (dayOfWeek >= 1 && dayOfWeek <= 5 && !holidays.includes(dateStr) && !isOfficialHoliday) {
         workingDays++;
       }
     }
@@ -169,6 +203,8 @@ function OvertimeTracker() {
     const expectedHours = workingDays * 4;
     const extraRegularHours = Math.max(0, regularHours - expectedHours);
     const totalOvertime = extraRegularHours + saturdayHours;
+
+    const totalPayment = (extraRegularHours * dayRate) + (saturdayHours * eveningRate);
     
     return {
       workingDays,
@@ -176,15 +212,16 @@ function OvertimeTracker() {
       regularHours,
       saturdayHours,
       extraRegularHours,
-      totalOvertime
+      totalOvertime,
+      totalPayment
     };
   };
 
   const exportToCSV = () => {
-    let csv = 'Ad,Çalışan No,Çalışılması Gereken Gün,Beklenen Saat,Normal Saat,Cumartesi Saat,Fazla Normal Saat,Toplam Fazla Mesai\n';
+    let csv = 'Ad,Çalışan No,Çalışılması Gereken Gün,Beklenen Saat,Normal Saat,Cumartesi Saat,Fazla Normal Saat,Toplam Fazla Mesai,Toplam Ödeme (₺)\n';
     employees.forEach(emp => {
       const calc = calculateOvertime(emp.id);
-      csv += `${emp.name},${emp.empId || '-'},${calc.workingDays},${calc.expectedHours},${calc.regularHours},${calc.saturdayHours},${calc.extraRegularHours},${calc.totalOvertime}\n`;
+      csv += `${emp.name},${emp.empId || '-'},${calc.workingDays},${calc.expectedHours},${calc.regularHours},${calc.saturdayHours},${calc.extraRegularHours},${calc.totalOvertime},${calc.totalPayment.toFixed(2)}\n`;
     });
     
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -222,7 +259,7 @@ function OvertimeTracker() {
           </div>
 
           <div className="flex gap-2 mb-6 border-b">
-            {['employees', 'worklog', 'holidays', 'report'].map(tab => (
+            {['employees', 'worklog', 'holidays', 'report', 'settings'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -236,6 +273,7 @@ function OvertimeTracker() {
                 {tab === 'worklog' && '📅 Çalışma Saatleri'}
                 {tab === 'holidays' && '🏖️ Tatil Günleri'}
                 {tab === 'report' && '📊 Rapor'}
+                {tab === 'settings' && '⚙️ Ayarlar'}
               </button>
             ))}
           </div>
@@ -350,6 +388,7 @@ function OvertimeTracker() {
                   const [year, month] = selectedMonth.split('-').map(Number);
                   const daysInMonth = getDaysInMonth(selectedMonth);
                   
+                  const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
                   return (
                     <div key={emp.id} className="bg-gray-50 p-6 rounded-lg">
                       <h3 className="font-semibold text-lg mb-4">{emp.name}</h3>
@@ -360,10 +399,13 @@ function OvertimeTracker() {
                           const dayOfWeek = date.getDay();
                           const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                           const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                          const isHoliday = holidays.includes(dateStr) || officialHolidays2025.includes(dateStr);
+                          const isHoliday = holidays.includes(dateStr) || officialHolidays2025.some(h => h.date === dateStr);
                           
                           return (
                             <div key={day} className="text-center">
+                              <div className={`text-xs font-bold mb-1 ${isWeekend ? 'text-red-500' : 'text-gray-600'}`}>
+                                {dayNames[dayOfWeek]}
+                              </div>
                               <div className={`text-xs mb-1 ${isWeekend ? 'text-red-500' : 'text-gray-600'}`}>
                                 {day}
                               </div>
@@ -422,10 +464,11 @@ function OvertimeTracker() {
 
               <div className="bg-green-50 p-6 rounded-lg">
                 <h3 className="font-semibold text-lg mb-4">2025 Resmi Tatiller (Otomatik)</h3>
-                <div className="grid grid-cols-3 gap-2 text-sm">
-                  {officialHolidays2025.map(date => (
-                    <div key={date} className="bg-white p-2 rounded text-center">
-                      {date}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                  {officialHolidays2025.map(holiday => (
+                    <div key={holiday.date} className="bg-white p-3 rounded text-center">
+                      <p className="font-semibold">{holiday.date}</p>
+                      <p className="text-gray-600">{holiday.description}</p>
                     </div>
                   ))}
                 </div>
@@ -469,15 +512,59 @@ function OvertimeTracker() {
                       </div>
                     </div>
                     <div className="mt-4 bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-lg border-2 border-orange-300">
-                      <p className="text-sm text-gray-600 mb-1">Toplam Fazla Mesai</p>
-                      <p className="text-4xl font-bold text-orange-600">{calc.totalOvertime} saat</p>
-                      <p className="text-xs text-gray-500 mt-2">
-                        ({calc.extraRegularHours} normal + {calc.saturdayHours} cumartesi)
-                      </p>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-sm text-gray-600 mb-1">Toplam Fazla Mesai</p>
+                          <p className="text-4xl font-bold text-orange-600">{calc.totalOvertime} saat</p>
+                          <p className="text-xs text-gray-500 mt-2">
+                            ({calc.extraRegularHours} normal + {calc.saturdayHours} cumartesi)
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-600 mb-1">Toplam Ödeme</p>
+                          <p className="text-4xl font-bold text-green-600">
+                            {calc.totalPayment.toFixed(2)} ₺
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {activeTab === 'settings' && (
+            <div className="space-y-6">
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="font-semibold text-lg mb-4">Fazla Mesai Ücret Ayarları</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <label htmlFor="dayRate" className="block text-sm font-medium text-gray-700 mb-2">
+                      Gündüz Fazla Mesai Saat Ücreti (₺)
+                    </label>
+                    <input
+                      type="number"
+                      id="dayRate"
+                      value={dayRate}
+                      onChange={(e) => setDayRate(parseFloat(e.target.value) || 0)}
+                      className="w-full px-4 py-2 border rounded-lg"
+                    />
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-lg">
+                    <label htmlFor="eveningRate" className="block text-sm font-medium text-gray-700 mb-2">
+                      Akşam/Hafta Sonu Fazla Mesai Saat Ücreti (₺)
+                    </label>
+                    <input
+                      type="number"
+                      id="eveningRate"
+                      value={eveningRate}
+                      onChange={(e) => setEveningRate(parseFloat(e.target.value) || 0)}
+                      className="w-full px-4 py-2 border rounded-lg"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
