@@ -5,7 +5,14 @@ module.exports = {
     "./overtime-tracker.tsx",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'primary-blue': {
+          DEFAULT: '#005FAA',
+          dark: '#004A8B',
+        },
+      },
+    },
   },
   plugins: [],
 }
