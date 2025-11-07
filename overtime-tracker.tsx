@@ -112,23 +112,41 @@ function OvertimeTracker() {
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const jsonData = XLSX.utils.sheet_to_json(sheet);
 
-    const newLogs = { ...workLogs };
+    const newLogs = JSON.parse(JSON.stringify(workLogs)); // Deep copy to avoid mutation issues
     
     jsonData.forEach(row => {
-      const empName = row['Ad Soyad'] || row['Ad'] || row['İsim'];
+      const empName = row['Ad Soyad'];
       const emp = employees.find(e => e.name === empName);
-      
-      if (emp) {
-        Object.keys(row).forEach(key => {
-          if (key.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            if (!newLogs[emp.id]) newLogs[emp.id] = {};
-            newLogs[emp.id][key] = parseFloat(row[key]) || 0;
-          }
-        });
+      if (!emp) return;
+
+      if (!newLogs[emp.id]) {
+        newLogs[emp.id] = {};
       }
+
+      Object.keys(row).forEach(header => {
+        const match = header.match(/^(\d{4}-\d{2}-\d{2}) \((Gündüz|Akşam)\)$/);
+        if (match) {
+          const date = match[1];
+          const type = match[2] === 'Gündüz' ? 'day' : 'evening';
+          const hours = parseFloat(row[header]) || 0;
+
+          if (hours > 0) {
+            if (!newLogs[emp.id][date]) {
+              newLogs[emp.id][date] = { day: 0, evening: 0 };
+            }
+            newLogs[emp.id][date][type] = hours;
+
+            const dayOfWeek = new Date(date).getDay();
+            if (dayOfWeek === 0) {
+              newLogs[emp.id][date].reason = 'Excel\'den toplu yüklendi';
+            }
+          }
+        }
+      });
     });
 
     setWorkLogs(newLogs);
+    alert('Çalışma saatleri başarıyla yüklendi!');
   };
 
   const addEmployee = () => {
@@ -252,19 +270,55 @@ function OvertimeTracker() {
     };
   };
 
-  const exportToCSV = () => {
-    let csv = 'Ad,Çalışan No,Beklenen Saat,Fazla Gündüz,Toplam Akşam,Cumartesi Gündüz,Cumartesi Akşam,Pazar Gündüz,Pazar Akşam,Toplam Fazla Mesai,Toplam Ödeme (₺)\n';
-    employees.forEach(emp => {
+  const exportToExcel = () => {
+    const data = employees.map(emp => {
       const calc = calculateOvertime(emp.id);
-      csv += `${emp.name},${emp.empId || '-'},${calc.expectedHours},${calc.extraDayHours},${calc.totalEveningHours},${calc.saturdayDayHours},${calc.saturdayEveningHours},${calc.sundayDayHours},${calc.sundayEveningHours},${calc.totalOvertime},${calc.totalPayment.toFixed(2)}\n`;
+      return {
+        'Ad Soyad': emp.name,
+        'Çalışan No': emp.empId || '-',
+        'Beklenen Saat': calc.expectedHours,
+        'Fazla Gündüz': calc.extraDayHours,
+        'Toplam Akşam': calc.totalEveningHours,
+        'Cumartesi Gündüz': calc.saturdayDayHours,
+        'Cumartesi Akşam': calc.saturdayEveningHours,
+        'Pazar Gündüz': calc.sundayDayHours,
+        'Pazar Akşam': calc.sundayEveningHours,
+        'Toplam Fazla Mesai': calc.totalOvertime,
+        'Toplam Ödeme (₺)': calc.totalPayment.toFixed(2),
+      };
     });
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Fazla Mesai Raporu');
+    XLSX.writeFile(workbook, `fazla-mesai-raporu-${selectedMonth}.xlsx`);
+  };
+
+  const downloadWorkLogTemplate = () => {
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const daysInMonth = getDaysInMonth(selectedMonth);
     
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `fazla-mesai-${selectedMonth}.csv`;
-    a.click();
+    const headers = ['Ad Soyad'];
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      headers.push(`${dateStr} (Gündüz)`);
+      headers.push(`${dateStr} (Akşam)`);
+    }
+
+    const data = employees.map(emp => {
+      const row = { 'Ad Soyad': emp.name };
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        row[`${dateStr} (Gündüz)`] = '';
+        row[`${dateStr} (Akşam)`] = '';
+      }
+      return row;
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(data, { header: headers });
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Çalışma Saatleri');
+    XLSX.writeFile(workbook, `calisma-saati-sablonu-${selectedMonth}.xlsx`);
   };
 
   return (
@@ -284,7 +338,7 @@ function OvertimeTracker() {
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
               />
               <button
-                onClick={exportToCSV}
+                onClick={exportToExcel}
                 className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
               >
                 <Download className="w-4 h-4" />
@@ -402,18 +456,27 @@ function OvertimeTracker() {
               <div className="bg-orange-50 p-6 rounded-lg mb-4">
                 <h3 className="font-semibold text-lg mb-4">Excel'den Çalışma Saatleri Yükle</h3>
                 <p className="text-sm text-gray-600 mb-3">
-                  Excel'de: "Ad Soyad" sütunu + Tarih sütunları (2025-01-01, 2025-01-02 formatında)
+                  Excel'de: "Ad Soyad" sütunu + Tarih sütunları (YYYY-AA-GG (Gündüz/Akşam) formatında)
                 </p>
-                <label className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 cursor-pointer flex items-center gap-2 inline-flex">
-                  <FileUp className="w-4 h-4" />
-                  Excel Seç
-                  <input
-                    type="file"
-                    accept=".xlsx,.xls"
-                    onChange={handleWorkLogFileUpload}
-                    className="hidden"
-                  />
-                </label>
+                <div className="flex items-center gap-4">
+                  <label className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 cursor-pointer flex items-center gap-2 inline-flex">
+                    <FileUp className="w-4 h-4" />
+                    Excel Yükle
+                    <input
+                      type="file"
+                      accept=".xlsx,.xls"
+                      onChange={handleWorkLogFileUpload}
+                      className="hidden"
+                    />
+                  </label>
+                  <button
+                    onClick={downloadWorkLogTemplate}
+                    className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    <Download className="w-4 h-4" />
+                    Şablon İndir
+                  </button>
+                </div>
               </div>
 
               {employees.length === 0 ? (
