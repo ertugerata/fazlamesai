@@ -9,10 +9,10 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+      <div className="bg-white dark:bg-gray-800 dark:text-gray-200 rounded-lg shadow-xl p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold">{title}</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">&times;</button>
+          <h3 className="text-xl font-bold dark:text-white">{title}</h3>
+          <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">&times;</button>
         </div>
         <div>{children}</div>
       </div>
@@ -71,15 +71,14 @@ function OvertimeTracker() {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
-useEffect(() => {
-  const root = document.documentElement;
-  if (isDarkMode) {
-    root.classList.add('dark');
-  } else {
-    root.classList.remove('dark');
-  }
-  localStorage.setItem('isDarkMode', JSON.stringify(isDarkMode));
-}, [isDarkMode]);
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('isDarkMode', JSON.stringify(isDarkMode));
+  }, [isDarkMode]);
   
   const officialHolidays2025 = [
     { date: '2025-01-01', description: 'Yılbaşı' },
@@ -251,6 +250,24 @@ useEffect(() => {
     setModalData(null);
   };
 
+  const handleSundayReasonSubmit = () => {
+    if (!modalData || !sundayReason) return;
+    const { empId, date, value, type } = modalData;
+    const currentLog = workLogs[empId]?.[date] || { day: 0, evening: 0 };
+    const newLog = { ...currentLog, [type]: parseFloat(value) || 0, reason: sundayReason };
+
+    setWorkLogs({
+      ...workLogs,
+      [empId]: {
+        ...(workLogs[empId] || {}),
+        [date]: newLog
+      }
+    });
+    setIsModalOpen(false);
+    setSundayReason('');
+    setModalData(null);
+  };
+
   const getDaysInMonth = (yearMonth) => {
     const [year, month] = yearMonth.split('-').map(Number);
     return new Date(year, month, 0).getDate();
@@ -402,7 +419,7 @@ useEffect(() => {
             </button>
             <button
               onClick={handleSundayReasonSubmit}
-              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 dark:hover:bg-primary-800"
             >
               Kaydet
             </button>
@@ -425,7 +442,7 @@ useEffect(() => {
               />
               <button
                 onClick={exportToExcel}
-                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 dark:hover:bg-green-700 transition-colors"
               >
                 <Download className="w-5 h-5" />
                 Dışa Aktar
@@ -474,18 +491,18 @@ useEffect(() => {
                     placeholder="Ad Soyad"
                     value={newEmployee.name}
                     onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
-                    className="md:col-span-1 px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    className="md:col-span-1 px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500"
                   />
                   <input
                     type="text"
                     placeholder="Çalışan No (opsiyonel)"
                     value={newEmployee.id}
                     onChange={(e) => setNewEmployee({ ...newEmployee, id: e.target.value })}
-                    className="md:col-span-1 px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    className="md:col-span-1 px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500"
                   />
                   <button
                     onClick={addEmployee}
-                    className="md:col-span-1 px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
+                    className="md:col-span-1 px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 dark:hover:bg-primary-800 transition-colors flex items-center justify-center gap-2"
                   >
                     <Plus className="w-5 h-5" /> Ekle
                   </button>
@@ -496,7 +513,7 @@ useEffect(() => {
                 <h3 className="font-bold text-xl mb-2 text-gray-700 dark:text-gray-200">Excel'den Çalışan Yükle</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">Excel'de şu sütunlar olmalı: "Ad Soyad", "Çalışan No"</p>
                 <div className="flex">
-                  <label className="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 cursor-pointer transition-colors flex items-center gap-2">
+                  <label className="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 dark:hover:bg-green-700 cursor-pointer transition-colors flex items-center gap-2">
                     <FileUp className="w-5 h-5" />
                     Excel Seç
                     <input
@@ -516,11 +533,11 @@ useEffect(() => {
                   placeholder="Ahmet Yılmaz, 1001&#10;Ayşe Demir, 1002&#10;Mehmet Kaya, 1003"
                   value={bulkEmployees}
                   onChange={(e) => setBulkEmployees(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg h-32 focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-lg h-32 focus:ring-2 focus:ring-primary-500"
                 />
                 <button
                   onClick={addBulkEmployees}
-                  className="mt-4 px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors"
+                  className="mt-4 px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 dark:hover:bg-purple-800 transition-colors"
                 >
                   Toplu Ekle
                 </button>
@@ -556,7 +573,7 @@ useEffect(() => {
                   "Gündüz Mesaisi" ve "Akşam Mesaisi" için ayrı sayfalara veri girin.
                 </p>
                 <div className="flex items-center gap-4">
-                  <label className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 cursor-pointer transition-colors flex items-center gap-2">
+                  <label className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 dark:hover:bg-orange-700 cursor-pointer transition-colors flex items-center gap-2">
                     <FileUp className="w-5 h-5" />
                     Excel Yükle
                     <input
@@ -568,7 +585,7 @@ useEffect(() => {
                   </label>
                   <button
                     onClick={downloadWorkLogTemplate}
-                    className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors"
+                    className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 dark:hover:bg-primary-800 transition-colors"
                   >
                     <Download className="w-5 h-5" />
                     Şablon İndir
