@@ -230,6 +230,9 @@ function OvertimeTracker() {
         [date]: newLogValue
       }
     });
+    setIsModalOpen(false);
+    setSundayReason('');
+    setModalData(null);
   };
 
 
