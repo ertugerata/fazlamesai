@@ -9,10 +9,10 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+      <div className="bg-white dark:bg-gray-800 dark:text-gray-200 rounded-lg shadow-xl p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">&times;</button>
+          <h3 className="text-xl font-bold dark:text-white">{title}</h3>
+          <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">&times;</button>
         </div>
         <div>{children}</div>
       </div>
@@ -72,11 +72,10 @@ function OvertimeTracker() {
   });
 
   useEffect(() => {
-    const root = document.documentElement;
     if (isDarkMode) {
-      root.classList.add('dark');
+      document.documentElement.classList.add('dark');
     } else {
-      root.classList.remove('dark');
+      document.documentElement.classList.remove('dark');
     }
     localStorage.setItem('isDarkMode', JSON.stringify(isDarkMode));
   }, [isDarkMode]);
@@ -231,25 +230,11 @@ function OvertimeTracker() {
         [date]: newLogValue
       }
     });
-  };
-
-  const handleSundayReasonSubmit = () => {
-    if (!modalData || !sundayReason) return;
-    const { empId, date, value, type } = modalData;
-    const currentLog = workLogs[empId]?.[date] || { day: 0, evening: 0 };
-    const newLog = { ...currentLog, [type]: parseFloat(value) || 0, reason: sundayReason };
-
-    setWorkLogs({
-      ...workLogs,
-      [empId]: {
-        ...(workLogs[empId] || {}),
-        [date]: newLog
-      }
-    });
     setIsModalOpen(false);
     setSundayReason('');
     setModalData(null);
   };
+
 
   const getDaysInMonth = (yearMonth) => {
     const [year, month] = yearMonth.split('-').map(Number);
@@ -353,7 +338,7 @@ function OvertimeTracker() {
   const downloadWorkLogTemplate = () => {
     const [year, month] = selectedMonth.split('-').map(Number);
     const daysInMonth = getDaysInMonth(selectedMonth);
-
+    
     const headers = ['Ad Soyad'];
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -374,7 +359,7 @@ function OvertimeTracker() {
 
     XLSX.utils.book_append_sheet(workbook, dayWorksheet, 'Gündüz Mesaisi');
     XLSX.utils.book_append_sheet(workbook, eveningWorksheet, 'Akşam Mesaisi');
-    
+
     XLSX.writeFile(workbook, `calisma-saati-sablonu-${selectedMonth}.xlsx`);
   };
 
@@ -386,11 +371,11 @@ function OvertimeTracker() {
         title="Pazar Günü Çalışma Nedeni"
       >
         <div className="space-y-4">
-          <p className="text-gray-700 dark:text-gray-300">Pazar günü çalışması için lütfen bir neden belirtin.</p>
+          <p>Pazar günü çalışması için lütfen bir neden belirtin.</p>
           <textarea
             value={sundayReason}
             onChange={(e) => setSundayReason(e.target.value)}
-            className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-primary-500"
+            className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:ring-primary-500"
             rows="3"
           />
           <div className="flex justify-end gap-2">
@@ -421,11 +406,11 @@ function OvertimeTracker() {
                 type="month"
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500"
               />
               <button
                 onClick={exportToExcel}
-                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 dark:hover:bg-green-700 transition-colors"
               >
                 <Download className="w-5 h-5" />
                 Dışa Aktar
@@ -474,14 +459,14 @@ function OvertimeTracker() {
                     placeholder="Ad Soyad"
                     value={newEmployee.name}
                     onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
-                    className="md:col-span-1 px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    className="md:col-span-1 px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500"
                   />
                   <input
                     type="text"
                     placeholder="Çalışan No (opsiyonel)"
                     value={newEmployee.id}
                     onChange={(e) => setNewEmployee({ ...newEmployee, id: e.target.value })}
-                    className="md:col-span-1 px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    className="md:col-span-1 px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500"
                   />
                   <button
                     onClick={addEmployee}
@@ -496,7 +481,7 @@ function OvertimeTracker() {
                 <h3 className="font-bold text-xl mb-2 text-gray-700 dark:text-gray-200">Excel'den Çalışan Yükle</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">Excel'de şu sütunlar olmalı: "Ad Soyad", "Çalışan No"</p>
                 <div className="flex">
-                  <label className="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 cursor-pointer transition-colors flex items-center gap-2">
+                  <label className="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 dark:hover:bg-green-700 cursor-pointer transition-colors flex items-center gap-2">
                     <FileUp className="w-5 h-5" />
                     Excel Seç
                     <input
@@ -516,7 +501,7 @@ function OvertimeTracker() {
                   placeholder="Ahmet Yılmaz, 1001&#10;Ayşe Demir, 1002&#10;Mehmet Kaya, 1003"
                   value={bulkEmployees}
                   onChange={(e) => setBulkEmployees(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg h-32 focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-lg h-32 focus:ring-2 focus:ring-primary-500"
                 />
                 <button
                   onClick={addBulkEmployees}
@@ -556,7 +541,7 @@ function OvertimeTracker() {
                   "Gündüz Mesaisi" ve "Akşam Mesaisi" için ayrı sayfalara veri girin.
                 </p>
                 <div className="flex items-center gap-4">
-                  <label className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 cursor-pointer transition-colors flex items-center gap-2">
+                  <label className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 dark:hover:bg-orange-700 cursor-pointer transition-colors flex items-center gap-2">
                     <FileUp className="w-5 h-5" />
                     Excel Yükle
                     <input
@@ -624,7 +609,7 @@ function OvertimeTracker() {
                                   placeholder="G"
                                   value={log.day || ''}
                                   onChange={(e) => updateWorkLog(emp.id, dateStr, e.target.value, 'day', dayOfWeek)}
-                                  className="w-full px-2 py-1 text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-md focus:ring-primary-500"
+                                  className="w-full px-2 py-1 text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md focus:ring-primary-500"
                                   title="Gündüz"
                                 />
                                 <input
@@ -634,7 +619,7 @@ function OvertimeTracker() {
                                   placeholder="A"
                                   value={log.evening || ''}
                                   onChange={(e) => updateWorkLog(emp.id, dateStr, e.target.value, 'evening', dayOfWeek)}
-                                  className="w-full px-2 py-1 text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-md focus:ring-primary-500"
+                                  className="w-full px-2 py-1 text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md focus:ring-primary-500"
                                   title="Akşam"
                                 />
                               </div>
@@ -662,7 +647,7 @@ function OvertimeTracker() {
                         setHolidays([...holidays, e.target.value].sort());
                       }
                     }}
-                    className="px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    className="px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
                 <div className="mt-6 space-y-3">
@@ -763,7 +748,7 @@ function OvertimeTracker() {
                       id="dayRate"
                       value={dayRate}
                       onChange={(e) => setDayRate(parseFloat(e.target.value) || 0)}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 text-xl"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-primary-500 text-xl"
                     />
                   </div>
                   <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm">
@@ -775,7 +760,7 @@ function OvertimeTracker() {
                       id="eveningRate"
                       value={eveningRate}
                       onChange={(e) => setEveningRate(parseFloat(e.target.value) || 0)}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 text-xl"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-primary-500 text-xl"
                     />
                   </div>
                 </div>
