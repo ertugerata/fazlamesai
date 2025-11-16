@@ -250,6 +250,24 @@ function OvertimeTracker() {
     setModalData(null);
   };
 
+  const handleSundayReasonSubmit = () => {
+    if (!modalData || !sundayReason) return;
+    const { empId, date, value, type } = modalData;
+    const currentLog = workLogs[empId]?.[date] || { day: 0, evening: 0 };
+    const newLog = { ...currentLog, [type]: parseFloat(value) || 0, reason: sundayReason };
+
+    setWorkLogs({
+      ...workLogs,
+      [empId]: {
+        ...(workLogs[empId] || {}),
+        [date]: newLog
+      }
+    });
+    setIsModalOpen(false);
+    setSundayReason('');
+    setModalData(null);
+  };
+
   const getDaysInMonth = (yearMonth) => {
     const [year, month] = yearMonth.split('-').map(Number);
     return new Date(year, month, 0).getDate();
