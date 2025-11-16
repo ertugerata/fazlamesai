@@ -71,14 +71,15 @@ function OvertimeTracker() {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('isDarkMode', JSON.stringify(isDarkMode));
-  }, [isDarkMode]);
+useEffect(() => {
+  const root = document.documentElement;
+  if (isDarkMode) {
+    root.classList.add('dark');
+  } else {
+    root.classList.remove('dark');
+  }
+  localStorage.setItem('isDarkMode', JSON.stringify(isDarkMode));
+}, [isDarkMode]);
   
   const officialHolidays2025 = [
     { date: '2025-01-01', description: 'Yılbaşı' },
