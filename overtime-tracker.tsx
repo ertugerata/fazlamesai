@@ -9,7 +9,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-      <div className="bg-white dark:bg-gray-800 dark:text-gray-200 rounded-lg shadow-xl p-6 w-full max-w-md">
+      <div className="bg-white dark:bg-slate-800 dark:text-gray-200 rounded-lg shadow-xl p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold dark:text-white">{title}</h3>
           <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">&times;</button>
@@ -381,7 +381,7 @@ function OvertimeTracker() {
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-900 min-h-screen font-sans text-gray-800 dark:text-gray-200 transition-colors duration-300">
+    <div className="bg-primary-50 dark:bg-slate-900 min-h-screen font-sans text-gray-800 dark:text-gray-200 transition-colors duration-300">
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -412,7 +412,7 @@ function OvertimeTracker() {
         </div>
       </Modal>
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <Clock className="w-8 h-8 text-primary-500" />
@@ -434,7 +434,7 @@ function OvertimeTracker() {
               </button>
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
-                className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-yellow-500 dark:text-yellow-400 hover:bg-gray-300 dark:hover:bg-gray-600"
+                className="p-2 rounded-lg bg-primary-100 dark:bg-slate-700 text-yellow-500 dark:text-yellow-400 hover:bg-primary-200 dark:hover:bg-slate-600"
                 data-testid="dark-mode-toggle"
               >
                 {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -442,7 +442,7 @@ function OvertimeTracker() {
             </div>
           </div>
 
-          <div className="flex gap-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex gap-4 border-b border-gray-200 dark:border-slate-700">
             {[
               { id: 'employees', label: 'Çalışanlar', icon: <Users size={18} /> },
               { id: 'worklog', label: 'Çalışma Saatleri', icon: <Calendar size={18} /> },
@@ -468,7 +468,7 @@ function OvertimeTracker() {
           <div className="pt-6">
           {activeTab === 'employees' && (
             <div className="space-y-8">
-              <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg">
+              <div className="bg-primary-50 dark:bg-slate-800/50 p-6 rounded-lg">
                 <h3 className="font-bold text-xl mb-4 text-gray-700 dark:text-gray-200">Tek Çalışan Ekle</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <input
@@ -528,11 +528,11 @@ function OvertimeTracker() {
                 </button>
               </div>
 
-              <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg">
+              <div className="bg-primary-50 dark:bg-slate-800/50 p-6 rounded-lg">
                 <h3 className="font-bold text-xl mb-4 text-gray-700 dark:text-gray-200">Çalışan Listesi ({employees.length})</h3>
                 <div className="space-y-3">
                   {employees.map(emp => (
-                    <div key={emp.id} className="flex items-center justify-between bg-white dark:bg-gray-700 p-4 rounded-lg shadow-sm">
+                    <div key={emp.id} className="flex items-center justify-between bg-white dark:bg-slate-700 p-4 rounded-lg shadow-sm">
                       <div>
                         <p className="font-semibold text-gray-800 dark:text-gray-100">{emp.name}</p>
                         {emp.empId && <p className="text-sm text-gray-500 dark:text-gray-400">No: {emp.empId}</p>}
@@ -587,7 +587,7 @@ function OvertimeTracker() {
                   
                   const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
                   return (
-                    <div key={emp.id} className="bg-white dark:bg-gray-800/50 p-6 rounded-lg shadow-sm">
+                    <div key={emp.id} className="bg-white dark:bg-slate-800/50 p-6 rounded-lg shadow-sm">
                       <h3 className="font-bold text-xl mb-4 text-gray-700 dark:text-gray-200">{emp.name}</h3>
                       <div className="grid grid-cols-7 gap-3">
                         {Array.from({ length: daysInMonth }, (_, i) => {
@@ -601,7 +601,7 @@ function OvertimeTracker() {
                           
                           const log = workLogs[emp.id]?.[dateStr] || { day: 0, evening: 0 };
                           return (
-                            <div key={day} className={`text-center p-3 rounded-lg border ${isHoliday ? 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-700' : isSunday ? 'bg-pink-50 dark:bg-pink-900/30 border-pink-200 dark:border-pink-700' : isSaturday ? 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-700' : 'bg-gray-50 dark:bg-gray-700/30 border-gray-200 dark:border-gray-600'}`}>
+                            <div key={day} className={`text-center p-3 rounded-lg border ${isHoliday ? 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-700' : isSunday ? 'bg-pink-50 dark:bg-pink-900/30 border-pink-200 dark:border-pink-700' : isSaturday ? 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-700' : 'bg-primary-50 dark:bg-slate-700/30 border-gray-200 dark:border-slate-600'}`}>
                               <div className="flex items-center justify-center mb-2">
                                 <div className={`text-xs font-bold uppercase ${isSunday || isSaturday ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
                                   {dayNames[dayOfWeek]}
@@ -653,7 +653,7 @@ function OvertimeTracker() {
 
           {activeTab === 'holidays' && (
             <div className="space-y-8">
-              <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg">
+              <div className="bg-primary-50 dark:bg-slate-800/50 p-6 rounded-lg">
                 <h3 className="font-bold text-xl mb-2 text-gray-700 dark:text-gray-200">Ara Verilen Günler</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">Öğretmenlerin çalışmadığı günleri ekleyin (örn: yarıyıl tatili)</p>
                 <div className="flex">
@@ -669,7 +669,7 @@ function OvertimeTracker() {
                 </div>
                 <div className="mt-6 space-y-3">
                   {holidays.map(date => (
-                    <div key={date} className="flex items-center justify-between bg-white dark:bg-gray-700 p-4 rounded-lg shadow-sm">
+                    <div key={date} className="flex items-center justify-between bg-white dark:bg-slate-700 p-4 rounded-lg shadow-sm">
                       <span className="font-semibold text-gray-800 dark:text-gray-100">{date}</span>
                       <button
                         onClick={() => setHolidays(holidays.filter(d => d !== date))}
@@ -682,11 +682,11 @@ function OvertimeTracker() {
                 </div>
               </div>
 
-              <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg">
+              <div className="bg-primary-50 dark:bg-slate-800/50 p-6 rounded-lg">
                 <h3 className="font-bold text-xl mb-4 text-gray-700 dark:text-gray-200">2025 Resmi Tatiller (Otomatik)</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {officialHolidays2025.map(holiday => (
-                    <div key={holiday.date} className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow-sm text-center">
+                    <div key={holiday.date} className="bg-white dark:bg-slate-700 p-4 rounded-lg shadow-sm text-center">
                       <p className="font-semibold text-gray-800 dark:text-gray-100">{holiday.date}</p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">{holiday.description}</p>
                     </div>
@@ -698,7 +698,7 @@ function OvertimeTracker() {
 
           {activeTab === 'report' && (
             <div className="space-y-8">
-              <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg">
+              <div className="bg-primary-50 dark:bg-slate-800/50 p-6 rounded-lg">
                 <h3 className="font-bold text-xl mb-2 text-gray-700 dark:text-gray-200">Hesaplama Mantığı</h3>
                 <ul className="text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
                   <li>Çalışılması gereken gün sayısı otomatik hesaplanır (Pzt-Cuma, tatiller hariç).</li>
@@ -711,7 +711,7 @@ function OvertimeTracker() {
               {employees.map(emp => {
                 const calc = calculateOvertime(emp.id);
                 return (
-                  <div key={emp.id} className="bg-white dark:bg-gray-800/50 p-6 rounded-lg shadow-sm">
+                  <div key={emp.id} className="bg-white dark:bg-slate-800/50 p-6 rounded-lg shadow-sm">
                     <h3 className="font-bold text-2xl mb-4 text-primary-600 dark:text-primary-400">{emp.name}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div className="bg-primary-50 dark:bg-primary-900/30 p-4 rounded-lg">
@@ -739,7 +739,7 @@ function OvertimeTracker() {
                         <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{calc.totalOvertime} <span className="text-lg">saat</span></p>
                       </div>
                     </div>
-                    <div className="mt-6 bg-gray-700 dark:bg-gray-900 text-white p-6 rounded-lg text-right">
+                    <div className="mt-6 bg-slate-700 dark:bg-slate-900 text-white p-6 rounded-lg text-right">
                       <p className="text-lg font-semibold text-gray-300 dark:text-gray-400">Toplam Hak Ediş</p>
                       <p className="text-4xl font-bold">
                         {calc.totalPayment.toFixed(2)} ₺
@@ -753,10 +753,10 @@ function OvertimeTracker() {
 
           {activeTab === 'settings' && (
             <div className="space-y-8">
-              <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg">
+              <div className="bg-primary-50 dark:bg-slate-800/50 p-6 rounded-lg">
                 <h3 className="font-bold text-xl mb-4 text-gray-700 dark:text-gray-200">Fazla Mesai Ücret Ayarları</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm">
+                  <div className="bg-white dark:bg-slate-700 p-6 rounded-lg shadow-sm">
                     <label htmlFor="dayRate" className="block text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
                       Gündüz Fazla Mesai Saat Ücreti (₺)
                     </label>
@@ -768,7 +768,7 @@ function OvertimeTracker() {
                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-primary-500 text-xl"
                     />
                   </div>
-                  <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm">
+                  <div className="bg-white dark:bg-slate-700 p-6 rounded-lg shadow-sm">
                     <label htmlFor="eveningRate" className="block text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
                       Akşam/Hafta Sonu Fazla Mesai Saat Ücreti (₺)
                     </label>
