@@ -16,7 +16,9 @@ def init_db():
         CREATE TABLE IF NOT EXISTS employees (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            emp_id TEXT
+            emp_id TEXT,
+            payment_type TEXT DEFAULT 'asgari_ucret_fazla_mesai',
+            fixed_salary REAL DEFAULT 0
         )
     ''')
 
@@ -52,6 +54,7 @@ def init_db():
     try:
         cursor.execute("INSERT INTO settings (key, value) VALUES (?, ?)", ('dayRate', '100'))
         cursor.execute("INSERT INTO settings (key, value) VALUES (?, ?)", ('eveningRate', '120'))
+        cursor.execute("INSERT INTO settings (key, value) VALUES (?, ?)", ('minimumWage', '17002'))
     except sqlite3.IntegrityError:
         # Ayarlar zaten mevcut, atla
         pass
