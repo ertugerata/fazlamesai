@@ -28,8 +28,8 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             employee_id INTEGER NOT NULL,
             date TEXT NOT NULL,
-            day_hours REAL DEFAULT 0,
-            evening_hours REAL DEFAULT 0,
+            day_hours INTEGER DEFAULT 0,
+            evening_hours INTEGER DEFAULT 0,
             sunday_reason TEXT,
             FOREIGN KEY (employee_id) REFERENCES employees (id) ON DELETE CASCADE
         )
