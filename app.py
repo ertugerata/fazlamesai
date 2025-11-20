@@ -81,7 +81,7 @@ def update_settings():
 @app.route('/api/employees', methods=['GET'])
 def get_employees():
     conn = get_db_connection()
-    employees = conn.execute('SELECT id, name, emp_id FROM employees ORDER BY name').fetchall()
+    employees = conn.execute('SELECT id, name, emp_id, payment_type, fixed_salary FROM employees ORDER BY name').fetchall()
     conn.close()
     return jsonify([dict(emp) for emp in employees])
 
@@ -96,7 +96,24 @@ def add_employee():
     conn.commit()
     new_id = cursor.lastrowid
     conn.close()
-    return jsonify({'id': new_id, 'name': name, 'emp_id': emp_id}), 201
+    # Yeni eklenen çalışanın tam bilgisini dön
+    new_employee = {'id': new_id, 'name': name, 'emp_id': emp_id, 'payment_type': 'asgari_ucret_fazla_mesai', 'fixed_salary': 0}
+    return jsonify(new_employee), 201
+
+@app.route('/api/employees/<int:id>', methods=['PUT'])
+def update_employee(id):
+    data = request.json
+    payment_type = data.get('payment_type')
+    fixed_salary = data.get('fixed_salary')
+
+    conn = get_db_connection()
+    conn.execute(
+        "UPDATE employees SET payment_type = ?, fixed_salary = ? WHERE id = ?",
+        (payment_type, fixed_salary, id)
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'Çalışan güncellendi.'})
 
 @app.route('/api/employees/bulk', methods=['POST'])
 def add_bulk_employees():
@@ -278,7 +295,7 @@ def download_worklog_template(year_month):
 @app.route('/api/report/<string:year_month>', methods=['GET'])
 def get_report(year_month):
     conn = get_db_connection()
-    employees = conn.execute("SELECT id, name, emp_id FROM employees").fetchall()
+    employees = conn.execute("SELECT * FROM employees").fetchall()
     logs_data = conn.execute("SELECT * FROM work_logs WHERE strftime('%Y-%m', date) = ?", (year_month,)).fetchall()
     holidays = [h['date'] for h in conn.execute("SELECT date FROM holidays").fetchall()]
     settings = {s['key']: float(s['value']) for s in conn.execute("SELECT key, value FROM settings").fetchall()}
@@ -290,71 +307,107 @@ def get_report(year_month):
         if emp_id not in logs_by_emp: logs_by_emp[emp_id] = {}
         logs_by_emp[emp_id][log['date']] = log
 
-    report = []
-    for emp in employees:
-        report.append(calculate_overtime_for_employee(emp, year_month, logs_by_emp.get(emp['id'], {}), holidays, settings))
-
+    report = [calculate_payment_for_employee(emp, year_month, logs_by_emp.get(emp['id'], {}), holidays, settings) for emp in employees]
     return jsonify(report)
 
-def calculate_overtime_for_employee(emp, year_month, logs, custom_holidays, settings):
+def calculate_payment_for_employee(emp, year_month, logs, custom_holidays, settings):
     year, month = map(int, year_month.split('-'))
     days_in_month = get_days_in_month(year_month)
 
-    total_day = 0; total_evening = 0; sat_day = 0; sat_evening = 0; sun_day = 0; sun_evening = 0
-
+    # Saatleri kategorilere ayır
+    weekday_day, weekday_evening, weekend_day, weekend_evening = 0, 0, 0, 0
     for day in range(1, days_in_month + 1):
         d = date(year, month, day)
         log = logs.get(d.isoformat(), {'day_hours': 0, 'evening_hours': 0})
-        if d.weekday() == 5:
-            sat_day += log['day_hours']; sat_evening += log['evening_hours']
-        elif d.weekday() == 6:
-            sun_day += log['day_hours']; sun_evening += log['evening_hours']
+        is_weekend = d.weekday() >= 5
+        is_holiday = d.isoformat() in custom_holidays or d.isoformat() in [h['date'] for h in OFFICIAL_HOLIDAYS_2025]
+
+        if is_weekend or is_holiday:
+            weekend_day += log['day_hours']
+            weekend_evening += log['evening_hours']
         else:
-            total_day += log['day_hours']; total_evening += log['evening_hours']
+            weekday_day += log['day_hours']
+            weekday_evening += log['evening_hours']
 
-    working_days = get_working_days_in_month(year_month, custom_holidays)
-    expected_hours = working_days * 4
-    extra_day_hours = max(0, total_day - expected_hours)
+    payment_type = emp['payment_type']
+    fixed_salary = float(emp['fixed_salary'] or 0)
+    day_rate = settings.get('dayRate', 0)
+    evening_rate = settings.get('eveningRate', 0)
 
-    total_overtime = extra_day_hours + total_evening + sat_day + sat_evening + sun_day + sun_evening
-    total_payment = (extra_day_hours * settings.get('dayRate', 0)) + \
-                    ((total_evening + sat_day + sat_evening + sun_day + sun_evening) * settings.get('eveningRate', 0))
+    overtime_hours = 0
+    overtime_payment = 0
+    total_payment = 0
+    calculation_details = ""
+
+    # Yalnızca Fazla Mesai
+    if payment_type == 'yalnizca_fazla_mesai':
+        overtime_hours = weekday_day + weekday_evening + weekend_day + weekend_evening
+        overtime_payment = (weekday_day * day_rate) + ((weekday_evening + weekend_day + weekend_evening) * evening_rate)
+        total_payment = overtime_payment
+        calculation_details = "Tüm saatler fazla mesai olarak hesaplandı."
+
+    # Asgari Ücret + Fazla Mesai
+    elif payment_type == 'asgari_ucret_fazla_mesai':
+        working_days = get_working_days_in_month(year_month, custom_holidays)
+        expected_hours = working_days * 4
+        extra_weekday_day = max(0, weekday_day - expected_hours)
+
+        overtime_hours = extra_weekday_day + weekday_evening + weekend_day + weekend_evening
+        overtime_payment = (extra_weekday_day * day_rate) + ((weekday_evening + weekend_day + weekend_evening) * evening_rate)
+        total_payment = settings.get('minimumWage', 0) + overtime_payment
+        calculation_details = f"{working_days} iş günü için {expected_hours} saat düşüldü."
+
+    # Sabit Maaş
+    elif payment_type == 'sabit_maas':
+        overtime_hours = 0
+        overtime_payment = 0
+        total_payment = fixed_salary
+        calculation_details = "Yalnızca sabit maaş alır, fazla mesai hesaplanmaz."
+
+    # Sabit Maaş + Nöbet
+    elif payment_type == 'sabit_maas_nobet':
+        # Nöbet, hafta sonu veya tatil günleri tutulur varsayımı
+        overtime_hours = weekend_day + weekend_evening
+        overtime_payment = (weekend_day + weekend_evening) * evening_rate # Nöbetler akşam ücretinden hesaplansın
+        total_payment = fixed_salary + overtime_payment
+        calculation_details = "Hafta sonu ve tatil günleri nöbet ücreti olarak eklendi."
 
     return {
         'emp_id': emp['id'], 'name': emp['name'], 'empId': emp['emp_id'],
-        'workingDays': working_days, 'expectedHours': expected_hours,
-        'totalDayHours': total_day, 'extraDayHours': extra_day_hours,
-        'totalEveningHours': total_evening, 'saturdayDayHours': sat_day, 'saturdayEveningHours': sat_evening,
-        'sundayDayHours': sun_day, 'sundayEveningHours': sun_evening,
-        'totalOvertime': total_overtime, 'totalPayment': total_payment,
+        'paymentType': payment_type, 'fixedSalary': fixed_salary,
+        'weekdayDayHours': weekday_day, 'weekdayEveningHours': weekday_evening,
+        'weekendDayHours': weekend_day, 'weekendEveningHours': weekend_evening,
+        'totalHours': weekday_day + weekday_evening + weekend_day + weekend_evening,
+        'overtimeHours': overtime_hours,
+        'overtimePayment': overtime_payment,
+        'totalPayment': total_payment,
+        'minimumWage': settings.get('minimumWage', 0) if payment_type == 'asgari_ucret_fazla_mesai' else 0,
+        'calculationDetails': calculation_details
     }
 
 @app.route('/api/report/export/<string:year_month>', methods=['GET'])
 def export_report(year_month):
-    # This reuses the logic from get_report, which is slightly inefficient but simple
     report_data = get_report(year_month).get_json()
-
     wb = openpyxl.Workbook()
     sheet = wb.active
-    sheet.title = "Fazla Mesai Raporu"
+    sheet.title = "Maaş Raporu"
 
-    headers = ['Ad Soyad', 'Çalışan No', 'Beklenen Saat', 'Fazla Gündüz', 'Toplam Akşam',
-               'Cumartesi Gündüz', 'Cumartesi Akşam', 'Pazar Gündüz', 'Pazar Akşam',
-               'Toplam Fazla Mesai', 'Toplam Ödeme (₺)']
+    headers = ['Ad Soyad', 'Çalışan No', 'Ödeme Tipi', 'Sabit Maaş', 'Asgari Ücret',
+               'Fazla Mesai Saati', 'Fazla Mesai Ödemesi', 'Toplam Hakediş', 'Açıklama']
     sheet.append(headers)
 
-    for row_data in report_data:
+    for data in report_data:
         sheet.append([
-            row_data['name'], row_data['empId'], row_data['expectedHours'], row_data['extraDayHours'],
-            row_data['totalEveningHours'], row_data['saturdayDayHours'], row_data['saturdayEveningHours'],
-            row_data['sundayDayHours'], row_data['sundayEveningHours'], row_data['totalOvertime'],
-            f"{row_data['totalPayment']:.2f}"
+            data['name'], data['empId'], data['paymentType'],
+            f"{data['fixedSalary']:.2f}", f"{data['minimumWage']:.2f}",
+            data['overtimeHours'], f"{data['overtimePayment']:.2f}",
+            f"{data['totalPayment']:.2f}", data['calculationDetails']
         ])
 
     output = BytesIO()
     wb.save(output)
     output.seek(0)
-    return send_file(output, as_attachment=True, download_name=f'fazla-mesai-raporu-{year_month}.xlsx')
+    return send_file(output, as_attachment=True, download_name=f'maas-raporu-{year_month}.xlsx')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

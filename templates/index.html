@@ -18,156 +18,134 @@
     <!-- Pazar Günü Gerekçe Modalı -->
     <div id="sunday-reason-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center hidden">
         <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-md">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold dark:text-white">Pazar Günü Çalışma Nedeni</h3>
-                <button id="close-modal-btn" class="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">&times;</button>
-            </div>
-            <div class="space-y-4">
-                <p>Pazar günü çalışması için lütfen bir neden belirtin.</p>
-                <textarea id="sunday-reason-input" class="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:ring-blue-500" rows="3"></textarea>
-                <div class="flex justify-end gap-2">
-                    <button id="cancel-modal-btn" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500">İptal</button>
-                    <button id="save-reason-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Kaydet</button>
-                </div>
+            <h3 class="text-xl font-bold dark:text-white mb-4">Pazar Günü Çalışma Nedeni</h3>
+            <textarea id="sunday-reason-input" class="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700" rows="3" placeholder="Lütfen bir neden belirtin..."></textarea>
+            <div class="flex justify-end gap-2 mt-4">
+                <button id="cancel-modal-btn" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded-lg">İptal</button>
+                <button id="save-reason-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Kaydet</button>
             </div>
         </div>
     </div>
+
+    <!-- Çalışan Maaş Ayarları Modalı -->
+    <div id="salary-settings-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modal-title" class="text-xl font-bold dark:text-white">Maaş Ayarları</h3>
+                <button id="close-salary-modal-btn" class="text-gray-400 hover:text-red-500">&times;</button>
+            </div>
+            <form id="salary-settings-form" class="space-y-4">
+                <input type="hidden" id="modal-employee-id">
+                <div>
+                    <label for="payment-type" class="block mb-2 font-semibold">Ödeme Tipi</label>
+                    <select id="payment-type" class="w-full p-2 border rounded bg-white dark:bg-slate-700">
+                        <option value="asgari_ucret_fazla_mesai">Asgari Ücret + Fazla Mesai</option>
+                        <option value="sabit_maas">Yalnızca Sabit Maaş</option>
+                        <option value="sabit_maas_nobet">Sabit Maaş + Nöbet</option>
+                        <option value="yalnizca_fazla_mesai">Yalnızca Fazla Mesai</option>
+                    </select>
+                </div>
+                <div id="fixed-salary-container" class="hidden">
+                    <label for="fixed-salary" class="block mb-2 font-semibold">Sabit Maaş Tutarı (₺)</label>
+                    <input type="number" id="fixed-salary" class="w-full p-2 border rounded bg-white dark:bg-slate-700" step="0.01">
+                </div>
+                <div class="flex justify-end gap-2 pt-4">
+                    <button type="button" id="cancel-salary-modal-btn" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded-lg">İptal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 
     <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
             <!-- Üst Başlık ve Kontroller -->
             <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-3">
-                    <i data-lucide="clock" class="w-8 h-8 text-blue-500"></i>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Fazla Mesai Takip</h1>
-                </div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Fazla Mesai ve Maaş Takip</h1>
                 <div class="flex items-center gap-4">
-                    <input type="month" id="selected-month" class="px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <button id="export-report-btn" class="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
-                        <i data-lucide="download" class="w-5 h-5"></i> Dışa Aktar
+                    <input type="month" id="selected-month" class="px-4 py-2 border rounded-lg dark:bg-slate-700">
+                    <button id="export-report-btn" class="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg">
+                        <i data-lucide="download"></i> Dışa Aktar
                     </button>
-                    <button id="dark-mode-toggle" class="p-2 rounded-lg bg-blue-100 dark:bg-slate-700 hover:bg-blue-200 dark:hover:bg-slate-600">
-                        <i data-lucide="sun" class="w-5 h-5 text-yellow-500 hidden dark:inline"></i>
-                        <i data-lucide="moon" class="w-5 h-5 text-slate-700 inline dark:hidden"></i>
+                    <button id="dark-mode-toggle" class="p-2 rounded-lg bg-blue-100 dark:bg-slate-700">
+                         <i data-lucide="sun" class="hidden dark:inline"></i><i data-lucide="moon" class="inline dark:hidden"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Sekmeler -->
             <div id="tabs" class="flex gap-4 border-b border-gray-200 dark:border-slate-700">
-                <button data-tab="employees" class="tab-btn flex items-center gap-2 px-4 py-2 font-semibold transition-colors rounded-t-lg -mb-px">
-                    <i data-lucide="users" class="w-5 h-5"></i> Çalışanlar
-                </button>
-                <button data-tab="worklog" class="tab-btn flex items-center gap-2 px-4 py-2 font-semibold transition-colors rounded-t-lg -mb-px">
-                    <i data-lucide="calendar" class="w-5 h-5"></i> Çalışma Saatleri
-                </button>
-                <button data-tab="holidays" class="tab-btn flex items-center gap-2 px-4 py-2 font-semibold transition-colors rounded-t-lg -mb-px">
-                    <i data-lucide="calendar" class="w-5 h-5"></i> Tatil Günleri
-                </button>
-                 <button data-tab="report" class="tab-btn flex items-center gap-2 px-4 py-2 font-semibold transition-colors rounded-t-lg -mb-px">
-                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Rapor
-                </button>
-                <button data-tab="settings" class="tab-btn flex items-center gap-2 px-4 py-2 font-semibold transition-colors rounded-t-lg -mb-px">
-                    <i data-lucide="settings" class="w-5 h-5"></i> Ayarlar
-                </button>
+                <button data-tab="employees" class="tab-btn">Çalışanlar</button>
+                <button data-tab="worklog" class="tab-btn">Çalışma Saatleri</button>
+                <button data-tab="holidays" class="tab-btn">Tatil Günleri</button>
+                <button data-tab="report" class="tab-btn">Rapor</button>
+                <button data-tab="settings" class="tab-btn">Ayarlar</button>
             </div>
 
             <!-- Sekme İçerikleri -->
             <div class="pt-6">
                 <!-- Çalışanlar Sekmesi -->
-                <div id="employees-tab" class="tab-content space-y-8">
-                    <!-- Tek Çalışan Ekle -->
-                    <div class="bg-blue-50 dark:bg-slate-800/50 p-6 rounded-lg">
-                        <h3 class="font-bold text-xl mb-4">Tek Çalışan Ekle</h3>
-                        <form id="add-employee-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" id="new-employee-name" placeholder="Ad Soyad" required class="md:col-span-1 p-3 border dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg">
-                            <input type="text" id="new-employee-id" placeholder="Çalışan No (opsiyonel)" class="md:col-span-1 p-3 border dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg">
-                            <button type="submit" class="md:col-span-1 p-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
-                                <i data-lucide="plus" class="w-5 h-5"></i> Ekle
-                            </button>
-                        </form>
-                    </div>
-                    <!-- Excel'den Yükle -->
-                    <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg">
-                        <h3 class="font-bold text-xl mb-2">Excel'den Çalışan Yükle</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Sütunlar: "Ad Soyad", "Çalışan No"</p>
-                        <input type="file" id="employee-file-upload" class="hidden" accept=".xlsx,.xls">
-                        <label for="employee-file-upload" class="cursor-pointer p-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 flex items-center justify-center gap-2 max-w-xs">
-                            <i data-lucide="file-up" class="w-5 h-5"></i> Excel Seç
-                        </label>
-                    </div>
-                    <!-- Çalışan Listesi -->
-                    <div id="employee-list-container" class="bg-blue-50 dark:bg-slate-800/50 p-6 rounded-lg"></div>
+                <div id="employees-tab" class="tab-content">
+                     <form id="add-employee-form" class="mb-6 flex gap-2">
+                        <input type="text" id="new-employee-name" placeholder="Ad Soyad" required class="flex-grow p-2 border rounded dark:bg-slate-700">
+                        <input type="text" id="new-employee-id" placeholder="Çalışan No" class="p-2 border rounded dark:bg-slate-700">
+                        <button type="submit" class="p-2 bg-blue-600 text-white rounded-lg">Ekle</button>
+                    </form>
+                    <input type="file" id="employee-file-upload" class="hidden" accept=".xlsx,.xls">
+                    <label for="employee-file-upload" class="cursor-pointer mb-6 p-2 bg-green-500 text-white rounded-lg inline-block">Excel'den Yükle</label>
+                    <div id="employee-list-container"></div>
                 </div>
 
                 <!-- Çalışma Saatleri Sekmesi -->
-                <div id="worklog-tab" class="tab-content hidden space-y-6">
-                    <div class="bg-orange-50 dark:bg-orange-900/20 p-6 rounded-lg flex items-center gap-4">
-                        <div>
-                            <h3 class="font-bold text-xl mb-2">Excel'den Çalışma Saatleri Yükle</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">"Gündüz Mesaisi" ve "Akşam Mesaisi" sayfaları olan şablonu kullanın.</p>
-                        </div>
+                <div id="worklog-tab" class="tab-content hidden">
+                     <div class="mb-4 flex gap-2">
                         <input type="file" id="worklog-file-upload" class="hidden" accept=".xlsx,.xls">
-                        <label for="worklog-file-upload" class="ml-auto cursor-pointer p-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 flex items-center justify-center gap-2">
-                             <i data-lucide="file-up" class="w-5 h-5"></i> Yükle
-                        </label>
-                        <button id="download-template-btn" class="p-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
-                            <i data-lucide="download" class="w-5 h-5"></i> Şablon İndir
-                        </button>
+                        <label for="worklog-file-upload" class="cursor-pointer p-2 bg-orange-500 text-white rounded-lg">Saatleri Yükle</label>
+                        <button id="download-template-btn" class="p-2 bg-blue-600 text-white rounded-lg">Şablon İndir</button>
                     </div>
                     <div id="worklog-grid-container"></div>
                 </div>
 
                 <!-- Tatil Günleri Sekmesi -->
-                <div id="holidays-tab" class="tab-content hidden space-y-8">
-                     <div class="bg-blue-50 dark:bg-slate-800/50 p-6 rounded-lg">
-                        <h3 class="font-bold text-xl mb-2">Ara Tatil Ekle</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Öğretmenlerin çalışmadığı günleri ekleyin (örn: yarıyıl tatili)</p>
-                        <form id="add-holiday-form" class="flex items-center gap-4">
-                            <input type="date" id="new-holiday-date" required class="p-3 border dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg">
-                            <button type="submit" class="p-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
-                                <i data-lucide="plus" class="w-5 h-5"></i> Ekle
-                            </button>
-                        </form>
-                        <div id="custom-holidays-list" class="mt-6"></div>
-                    </div>
-                    <div class="bg-blue-50 dark:bg-slate-800/50 p-6 rounded-lg">
-                        <h3 class="font-bold text-xl mb-4">2025 Resmi Tatiller (Otomatik)</h3>
-                        <div id="official-holidays-list" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+                <div id="holidays-tab" class="tab-content hidden">
+                    <form id="add-holiday-form" class="mb-6 flex gap-2">
+                        <input type="date" id="new-holiday-date" required class="p-2 border rounded dark:bg-slate-700">
+                        <button type="submit" class="p-2 bg-blue-600 text-white rounded-lg">Tatil Ekle</button>
+                    </form>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">Eklenen Tatiller</h3>
+                            <div id="custom-holidays-list"></div>
+                        </div>
+                         <div>
+                            <h3 class="font-bold text-lg mb-2">2025 Resmi Tatiller</h3>
+                            <div id="official-holidays-list"></div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Rapor Sekmesi -->
-                <div id="report-tab" class="tab-content hidden space-y-8">
-                    <div class="bg-blue-50 dark:bg-slate-800/50 p-6 rounded-lg">
-                        <h3 class="font-bold text-xl mb-2">Hesaplama Mantığı</h3>
-                        <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
-                            <li>Çalışılması gereken gün sayısı otomatik hesaplanır (Pzt-Cuma, tatiller hariç).</li>
-                            <li>Beklenen saat = Çalışılması gereken gün × 4.</li>
-                            <li>Normal günlerde (Pzt-Cuma) bu saatten fazlası fazla mesaidir.</li>
-                            <li>Cumartesi, Pazar ve tatil günleri çalışılan tüm saatler fazla mesaidir.</li>
-                        </ul>
-                    </div>
-                    <div id="report-container" class="space-y-6"></div>
+                <div id="report-tab" class="tab-content hidden">
+                    <div id="report-container" class="space-y-4"></div>
                 </div>
 
                 <!-- Ayarlar Sekmesi -->
                 <div id="settings-tab" class="tab-content hidden">
-                    <div class="bg-blue-50 dark:bg-slate-800/50 p-6 rounded-lg">
-                        <h3 class="font-bold text-xl mb-4">Fazla Mesai Ücret Ayarları</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="bg-white dark:bg-slate-700 p-6 rounded-lg shadow-sm">
-                                <label for="dayRate" class="block text-lg font-semibold mb-2">Gündüz Fazla Mesai Saat Ücreti (₺)</label>
-                                <input type="number" id="dayRate" class="w-full p-3 border dark:border-slate-600 bg-white dark:bg-slate-800 rounded-lg text-xl">
-                            </div>
-                            <div class="bg-white dark:bg-slate-700 p-6 rounded-lg shadow-sm">
-                                <label for="eveningRate" class="block text-lg font-semibold mb-2">Akşam/Hafta Sonu Fazla Mesai Saat Ücreti (₺)</label>
-                                <input type="number" id="eveningRate" class="w-full p-3 border dark:border-slate-600 bg-white dark:bg-slate-800 rounded-lg text-xl">
-                            </div>
+                    <div class="space-y-4 max-w-md">
+                        <div>
+                            <label for="minimumWage" class="block font-semibold">Asgari Ücret (Aylık)</label>
+                            <input type="number" id="minimumWage" class="w-full p-2 border rounded dark:bg-slate-700">
                         </div>
-                         <button id="save-settings-btn" class="mt-6 p-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
-                            <i data-lucide="save" class="w-5 h-5"></i> Ayarları Kaydet
-                        </button>
+                        <div>
+                            <label for="dayRate" class="block font-semibold">Gündüz Fazla Mesai Saat Ücreti (₺)</label>
+                            <input type="number" id="dayRate" class="w-full p-2 border rounded dark:bg-slate-700">
+                        </div>
+                        <div>
+                            <label for="eveningRate" class="block font-semibold">Akşam/Hafta Sonu Saat Ücreti (₺)</label>
+                            <input type="number" id="eveningRate" class="w-full p-2 border rounded dark:bg-slate-700">
+                        </div>
+                        <button id="save-settings-btn" class="p-2 bg-blue-600 text-white rounded-lg">Ayarları Kaydet</button>
                     </div>
                 </div>
             </div>
@@ -181,10 +159,10 @@ document.addEventListener('DOMContentLoaded', () => {
         employees: [],
         workLogs: {},
         holidays: [],
-        settings: { dayRate: 100, eveningRate: 120 },
+        settings: { dayRate: 100, eveningRate: 120, minimumWage: 17002 },
         activeTab: 'employees',
         selectedMonth: new Date().toISOString().slice(0, 7),
-        modalData: null
+        sundayModalData: null,
     };
 
     const OFFICIAL_HOLIDAYS_2025 = [
@@ -198,39 +176,37 @@ document.addEventListener('DOMContentLoaded', () => {
         { date: '2025-09-07', description: 'Kurban Bayramı' }, { date: '2025-09-08', description: 'Kurban Bayramı' },
         { date: '2025-10-29', description: 'Cumhuriyet Bayramı' },
     ];
+    const PAYMENT_TYPE_MAP = {
+        'asgari_ucret_fazla_mesai': 'Asgari Ücret + Fazla Mesai',
+        'sabit_maas': 'Yalnızca Sabit Maaş',
+        'sabit_maas_nobet': 'Sabit Maaş + Nöbet',
+        'yalnizca_fazla_mesai': 'Yalnızca Fazla Mesai'
+    };
+
 
     // --- SELECTORS ---
-    const monthInput = document.getElementById('selected-month');
-    const tabsContainer = document.getElementById('tabs');
-    const darkModeToggle = document.getElementById('dark-mode-toggle');
-    const employeeListContainer = document.getElementById('employee-list-container');
-    const worklogGridContainer = document.getElementById('worklog-grid-container');
-    const reportContainer = document.getElementById('report-container');
-    const customHolidaysList = document.getElementById('custom-holidays-list');
-    const officialHolidaysList = document.getElementById('official-holidays-list');
-    const dayRateInput = document.getElementById('dayRate');
-    const eveningRateInput = document.getElementById('eveningRate');
+    const qs = (selector) => document.querySelector(selector);
+    const monthInput = qs('#selected-month');
+    const employeeListContainer = qs('#employee-list-container');
+    const worklogGridContainer = qs('#worklog-grid-container');
+    const reportContainer = qs('#report-container');
+    const customHolidaysList = qs('#custom-holidays-list');
+    const officialHolidaysList = qs('#official-holidays-list');
+    const dayRateInput = qs('#dayRate');
+    const eveningRateInput = qs('#eveningRate');
+    const minimumWageInput = qs('#minimumWage');
 
-    // Modal selectors
-    const modal = document.getElementById('sunday-reason-modal');
-    const closeModalBtn = document.getElementById('close-modal-btn');
-    const cancelModalBtn = document.getElementById('cancel-modal-btn');
-    const saveReasonBtn = document.getElementById('save-reason-btn');
-    const reasonInput = document.getElementById('sunday-reason-input');
+    // Modals
+    const sundayModal = qs('#sunday-reason-modal');
+    const salaryModal = qs('#salary-settings-modal');
 
     // --- API HELPERS ---
     const api = {
         get: (url) => fetch(url).then(res => res.ok ? res.json() : Promise.reject(res)),
-        post: (url, data) => fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        }).then(res => res.ok ? res.json() : Promise.reject(res)),
+        post: (url, data) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(res => res.ok ? res.json() : Promise.reject(res)),
+        put: (url, data) => fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(res => res.ok ? res.json() : Promise.reject(res)),
         delete: (url) => fetch(url, { method: 'DELETE' }).then(res => res.ok ? res.json() : Promise.reject(res)),
-        upload: (url, formData) => fetch(url, {
-            method: 'POST',
-            body: formData
-        }).then(res => res.ok ? res.json() : Promise.reject(res))
+        upload: (url, formData) => fetch(url, { method: 'POST', body: formData }).then(res => res.ok ? res.json() : Promise.reject(res))
     };
 
     // --- RENDER FUNCTIONS ---
@@ -248,42 +224,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderTabs = () => {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-        document.getElementById(`${state.activeTab}-tab`).classList.remove('hidden');
+        qs(`#${state.activeTab}-tab`).classList.remove('hidden');
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            const isActive = btn.dataset.tab === state.activeTab;
-            btn.classList.toggle('text-blue-600', isActive);
-            btn.classList.toggle('dark:text-blue-400', isActive);
-            btn.classList.toggle('border-b-2', isActive);
-            btn.classList.toggle('border-blue-600', isActive);
-            btn.classList.toggle('dark:border-blue-400', isActive);
-            btn.classList.toggle('text-gray-500', !isActive);
-            btn.classList.toggle('dark:text-gray-400', !isActive);
+            btn.classList.toggle('text-blue-600', btn.dataset.tab === state.activeTab);
+            btn.classList.toggle('border-b-2', btn.dataset.tab === state.activeTab);
+            btn.classList.toggle('border-blue-600', btn.dataset.tab === state.activeTab);
         });
     };
 
     const renderEmployees = () => {
-        const html = `
+        employeeListContainer.innerHTML = `
             <h3 class="font-bold text-xl mb-4">Çalışan Listesi (${state.employees.length})</h3>
-            <div class="space-y-3">
+            <div class="space-y-2">
                 ${state.employees.map(emp => `
-                    <div class="flex items-center justify-between bg-white dark:bg-slate-700 p-4 rounded-lg shadow-sm">
+                    <div class="flex items-center justify-between bg-white dark:bg-slate-800/50 p-3 rounded-lg">
                         <div>
-                            <p class="font-semibold">${emp.name}</p>
-                            ${emp.emp_id ? `<p class="text-sm text-gray-500 dark:text-gray-400">No: ${emp.emp_id}</p>` : ''}
+                            <p class="font-semibold">${emp.name} <span class="text-sm text-gray-500">(${PAYMENT_TYPE_MAP[emp.payment_type]})</span></p>
+                            ${emp.emp_id ? `<p class="text-xs text-gray-400">No: ${emp.emp_id}</p>` : ''}
                         </div>
-                        <button class="delete-employee-btn text-gray-400 hover:text-red-500" data-id="${emp.id}">
-                            <i data-lucide="trash-2" class="w-5 h-5"></i>
-                        </button>
+                        <div class="flex gap-2">
+                            <button class="salary-settings-btn p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded" data-id="${emp.id}"><i data-lucide="settings-2"></i></button>
+                            <button class="delete-employee-btn p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded" data-id="${emp.id}"><i data-lucide="trash-2"></i></button>
+                        </div>
                     </div>
-                `).join('') || '<p class="text-center text-gray-500">Henüz çalışan eklenmedi.</p>'}
+                `).join('') || '<p>Henüz çalışan eklenmedi.</p>'}
             </div>`;
-        employeeListContainer.innerHTML = html;
     };
 
-    const renderWorklog = () => {
+     const renderWorklog = () => {
         if (state.employees.length === 0) {
-            worklogGridContainer.innerHTML = '<p class="text-gray-500 text-center py-8">Önce çalışan ekleyin</p>';
-            return;
+            worklogGridContainer.innerHTML = '<p>Önce çalışan ekleyin</p>'; return;
         }
         const [year, month] = state.selectedMonth.split('-').map(Number);
         const daysInMonth = new Date(year, month, 0).getDate();
@@ -291,101 +261,64 @@ document.addEventListener('DOMContentLoaded', () => {
         const allHolidays = [...state.holidays, ...OFFICIAL_HOLIDAYS_2025.map(h => h.date)];
 
         worklogGridContainer.innerHTML = state.employees.map(emp => `
-            <div class="bg-white dark:bg-slate-800/50 p-6 rounded-lg shadow-sm mb-6">
-                <h3 class="font-bold text-xl mb-4">${emp.name}</h3>
-                <div class="grid grid-cols-7 gap-3">
+            <div class="bg-white dark:bg-slate-800/50 p-4 rounded-lg mb-4">
+                <h3 class="font-bold text-lg mb-2">${emp.name}</h3>
+                <div class="grid grid-cols-7 gap-2">
                     ${Array.from({ length: daysInMonth }, (_, i) => {
-                        const day = i + 1;
-                        const date = new Date(year, month - 1, day);
-                        const dayOfWeek = date.getDay();
-                        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                        const isSunday = dayOfWeek === 0;
-                        const isSaturday = dayOfWeek === 6;
+                        const d = new Date(year, month - 1, i + 1);
+                        const dateStr = d.toISOString().slice(0, 10);
+                        const isWeekend = d.getDay() === 0 || d.getDay() === 6;
                         const isHoliday = allHolidays.includes(dateStr);
-                        const log = state.workLogs[emp.id]?.[dateStr] || { day: 0, evening: 0, reason: ''};
-
-                        let bgColor = 'bg-blue-50 dark:bg-slate-700/30';
-                        if (isHoliday) bgColor = 'bg-red-50 dark:bg-red-900/30';
-                        else if (isSunday) bgColor = 'bg-pink-50 dark:bg-pink-900/30';
-                        else if (isSaturday) bgColor = 'bg-yellow-50 dark:bg-yellow-900/30';
-
+                        const log = state.workLogs[emp.id]?.[dateStr] || { day: 0, evening: 0, reason: '' };
                         return `
-                        <div class="text-center p-3 rounded-lg border dark:border-slate-600 ${bgColor}">
-                            <div class="flex items-center justify-center mb-2">
-                                <div class="text-xs font-bold uppercase ${isSunday || isSaturday ? 'text-red-500' : 'text-gray-500'}">${dayNames[dayOfWeek]}</div>
-                                ${log.reason ? `<div class="relative group ml-1"><i data-lucide="message-square" class="w-4 h-4 text-blue-500 cursor-pointer"></i><div class="absolute bottom-full mb-2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">${log.reason}</div></div>` : ''}
-                            </div>
-                            <div class="text-xl font-semibold mb-2">${day}</div>
-                            <div class="space-y-2">
-                                <input type="number" min="0" step="0.5" placeholder="G" value="${log.day || ''}" data-emp-id="${emp.id}" data-date="${dateStr}" data-type="day" data-day-of-week="${dayOfWeek}" class="worklog-input w-full px-2 py-1 text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md">
-                                <input type="number" min="0" step="0.5" placeholder="A" value="${log.evening || ''}" data-emp-id="${emp.id}" data-date="${dateStr}" data-type="evening" data-day-of-week="${dayOfWeek}" class="worklog-input w-full px-2 py-1 text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md">
-                            </div>
+                        <div class="text-center p-2 rounded ${isHoliday ? 'bg-red-100 dark:bg-red-900/50' : isWeekend ? 'bg-yellow-100 dark:bg-yellow-900/50' : 'bg-blue-50 dark:bg-slate-700/50'}">
+                            <div class="text-xs font-bold flex justify-center items-center">${dayNames[d.getDay()]} ${log.reason ? `<div class="relative group ml-1"><i data-lucide="message-square" class="w-3 h-3 text-blue-500"></i><div class="absolute bottom-full mb-1 w-40 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">${log.reason}</div></div>` : ''}</div>
+                            <div class="font-semibold">${i + 1}</div>
+                            <input type="number" min="0" step="0.5" placeholder="G" value="${log.day || ''}" data-emp-id="${emp.id}" data-date="${dateStr}" data-type="day" data-day-of-week="${d.getDay()}" class="worklog-input w-full text-sm p-1 mt-1 border rounded">
+                            <input type="number" min="0" step="0.5" placeholder="A" value="${log.evening || ''}" data-emp-id="${emp.id}" data-date="${dateStr}" data-type="evening" data-day-of-week="${d.getDay()}" class="worklog-input w-full text-sm p-1 mt-1 border rounded">
                         </div>`;
                     }).join('')}
                 </div>
-            </div>
-        `).join('');
+            </div>`).join('');
     };
 
     const renderHolidays = () => {
-        customHolidaysList.innerHTML = `
-            <h3 class="font-bold text-xl mb-4">Eklenen Tatiller</h3>
-            <div class="space-y-3">
-            ${state.holidays.map(date => `
-                <div class="flex items-center justify-between bg-white dark:bg-slate-700 p-4 rounded-lg shadow-sm">
-                    <span class="font-semibold">${date}</span>
-                    <button class="delete-holiday-btn text-gray-400 hover:text-red-500" data-date="${date}">
-                        <i data-lucide="trash-2" class="w-5 h-5"></i>
-                    </button>
-                </div>
-            `).join('') || '<p class="text-center text-gray-500">Henüz tatil eklenmedi.</p>'}
-            </div>`;
+        customHolidaysList.innerHTML = state.holidays.map(date => `
+            <div class="flex justify-between items-center bg-white dark:bg-slate-800/50 p-2 rounded">
+                <span>${date}</span>
+                <button class="delete-holiday-btn" data-date="${date}"><i data-lucide="trash-2"></i></button>
+            </div>`).join('') || '<p>Tatil eklenmedi.</p>';
         officialHolidaysList.innerHTML = OFFICIAL_HOLIDAYS_2025.map(h => `
-            <div class="bg-white dark:bg-slate-700 p-4 rounded-lg shadow-sm text-center">
-                <p class="font-semibold">${h.date}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">${h.description}</p>
+            <div class="bg-white dark:bg-slate-800/50 p-2 rounded">
+                <p>${h.date}</p><p class="text-sm text-gray-500">${h.description}</p>
             </div>`).join('');
     };
 
     const renderReport = async () => {
+        reportContainer.innerHTML = '<p>Hesaplanıyor...</p>';
         const reportData = await api.get(`/api/report/${state.selectedMonth}`);
         if (!reportData || reportData.length === 0) {
-            reportContainer.innerHTML = '<p class="text-gray-500 text-center py-8">Rapor oluşturmak için çalışan ve çalışma saati ekleyin.</p>';
-            return;
+            reportContainer.innerHTML = '<p>Rapor verisi bulunamadı.</p>'; return;
         }
         reportContainer.innerHTML = reportData.map(calc => `
-             <div class="bg-white dark:bg-slate-800/50 p-6 rounded-lg shadow-sm">
-                <h3 class="font-bold text-2xl mb-4 text-blue-600 dark:text-blue-400">${calc.name}</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg">
-                        <p class="text-sm font-semibold text-blue-800 dark:text-blue-200">Beklenen Saat</p>
-                        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">${calc.expectedHours}</p>
-                    </div>
-                    <div class="bg-green-50 dark:bg-green-900/30 p-4 rounded-lg">
-                        <p class="text-sm font-semibold text-green-800 dark:text-green-200">Hafta İçi Gündüz</p>
-                        <p class="text-3xl font-bold text-green-600 dark:text-green-400">${calc.totalDayHours} <span class="text-lg">(Fazla: ${calc.extraDayHours})</span></p>
-                    </div>
-                    <div class="bg-purple-50 dark:bg-purple-900/30 p-4 rounded-lg">
-                        <p class="text-sm font-semibold text-purple-800 dark:text-purple-200">Hafta İçi Akşam</p>
-                        <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">${calc.totalEveningHours} <span class="text-lg">saat</span></p>
-                    </div>
-                    <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg">
-                        <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200">Cumartesi (G+A)</p>
-                        <p class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">${calc.saturdayDayHours + calc.saturdayEveningHours} <span class="text-lg">saat</span></p>
-                    </div>
-                    <div class="bg-pink-50 dark:bg-pink-900/30 p-4 rounded-lg">
-                        <p class="text-sm font-semibold text-pink-800 dark:text-pink-200">Pazar (G+A)</p>
-                        <p class="text-3xl font-bold text-pink-600 dark:text-pink-400">${calc.sundayDayHours + calc.sundayEveningHours} <span class="text-lg">saat</span></p>
-                    </div>
-                    <div class="bg-orange-50 dark:bg-orange-900/30 p-4 rounded-lg">
-                        <p class="text-sm font-semibold text-orange-800 dark:text-orange-200">Toplam Fazla Mesai</p>
-                        <p class="text-3xl font-bold text-orange-600 dark:text-orange-400">${calc.totalOvertime} <span class="text-lg">saat</span></p>
+             <div class="bg-white dark:bg-slate-800/50 p-4 rounded-lg">
+                <h3 class="font-bold text-xl mb-2">${calc.name} <span class="text-base font-normal text-gray-500">- ${PAYMENT_TYPE_MAP[calc.paymentType]}</span></h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    ${(calc.fixedSalary > 0 || calc.minimumWage > 0) ? `
+                    <div class="bg-slate-100 dark:bg-slate-700 p-3 rounded">
+                        <p class="text-sm">${calc.fixedSalary > 0 ? 'Sabit Maaş' : 'Asgari Ücret'}</p>
+                        <p class="font-bold text-lg">${(calc.fixedSalary || calc.minimumWage).toFixed(2)} ₺</p>
+                    </div>` : ''}
+                    <div class="bg-slate-100 dark:bg-slate-700 p-3 rounded">
+                        <p class="text-sm">Fazla Mesai Ödemesi</p>
+                        <p class="font-bold text-lg">${calc.overtimePayment.toFixed(2)} ₺ <span class="font-normal text-sm">(${calc.overtimeHours} sa)</span></p>
                     </div>
                 </div>
-                <div class="mt-6 bg-slate-700 dark:bg-slate-900 text-white p-6 rounded-lg text-right">
-                    <p class="text-lg font-semibold text-gray-300 dark:text-gray-400">Toplam Hak Ediş</p>
-                    <p class="text-4xl font-bold">${calc.totalPayment.toFixed(2)} ₺</p>
+                <div class="mt-4 bg-blue-600 text-white p-3 rounded-lg text-right">
+                    <p class="text-sm">TOPLAM HAKEDİŞ</p>
+                    <p class="font-bold text-2xl">${calc.totalPayment.toFixed(2)} ₺</p>
                 </div>
+                 <p class="text-xs text-gray-500 mt-2">Hesaplama Notu: ${calc.calculationDetails}</p>
             </div>
         `).join('');
     };
@@ -393,17 +326,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderSettings = () => {
         dayRateInput.value = state.settings.dayRate;
         eveningRateInput.value = state.settings.eveningRate;
+        minimumWageInput.value = state.settings.minimumWage;
     };
 
     // --- EVENT HANDLERS ---
-    const handleTabClick = (e) => {
-        const tabBtn = e.target.closest('.tab-btn');
-        if (tabBtn) {
-            state.activeTab = tabBtn.dataset.tab;
-            render();
-        }
-    };
-
     const handleMonthChange = async () => {
         state.selectedMonth = monthInput.value;
         state.workLogs = await api.get(`/api/worklogs/${state.selectedMonth}`);
@@ -412,8 +338,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const handleAddEmployee = async (e) => {
         e.preventDefault();
-        const name = document.getElementById('new-employee-name').value;
-        const emp_id = document.getElementById('new-employee-id').value;
+        const name = qs('#new-employee-name').value;
+        const emp_id = qs('#new-employee-id').value;
         if (name) {
             const newEmp = await api.post('/api/employees', { name, emp_id });
             state.employees.push(newEmp);
@@ -422,28 +348,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const handleDeleteEmployee = async (e) => {
+    const handleEmployeeListClick = async (e) => {
         const deleteBtn = e.target.closest('.delete-employee-btn');
+        const settingsBtn = e.target.closest('.salary-settings-btn');
+
         if (deleteBtn && confirm('Bu çalışanı silmek istediğinizden emin misiniz?')) {
             const id = deleteBtn.dataset.id;
             await api.delete(`/api/employees/${id}`);
             state.employees = state.employees.filter(emp => emp.id != id);
             render();
         }
+        if (settingsBtn) {
+            const emp = state.employees.find(e => e.id == settingsBtn.dataset.id);
+            qs('#modal-title').innerText = `${emp.name} - Maaş Ayarları`;
+            qs('#modal-employee-id').value = emp.id;
+            const paymentTypeSelect = qs('#payment-type');
+            paymentTypeSelect.value = emp.payment_type;
+            qs('#fixed-salary').value = emp.fixed_salary;
+            qs('#fixed-salary-container').classList.toggle('hidden', !paymentTypeSelect.value.startsWith('sabit_maas'));
+            salaryModal.classList.remove('hidden');
+        }
     };
 
     const handleWorklogChange = (e) => {
-        const input = e.target;
-        if (!input.classList.contains('worklog-input')) return;
-
-        const { empId, date, type, dayOfWeek } = input.dataset;
-        const value = parseFloat(input.value) || 0;
+        if (!e.target.classList.contains('worklog-input')) return;
+        const { empId, date, type, dayOfWeek } = e.target.dataset;
+        const value = parseFloat(e.target.value) || 0;
         const existingLog = state.workLogs[empId]?.[date] || {};
 
         if (dayOfWeek === '0' && value > 0 && !existingLog.reason) {
-            state.modalData = { empId, date, type, value };
-            modal.classList.remove('hidden');
-            reasonInput.focus();
+            state.sundayModalData = { empId, date, type, value };
+            sundayModal.classList.remove('hidden');
         } else {
             updateWorklog(empId, date, type, value);
         }
@@ -452,58 +387,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateWorklog = async (empId, date, type, value, reason = null) => {
         const payload = { empId, date, type, value };
         if (reason !== null) payload.reason = reason;
-
         await api.post('/api/worklogs', payload);
-
         if (!state.workLogs[empId]) state.workLogs[empId] = {};
         if (!state.workLogs[empId][date]) state.workLogs[empId][date] = { day: 0, evening: 0, reason: '' };
-
         state.workLogs[empId][date][type] = value;
         if (reason !== null) state.workLogs[empId][date].reason = reason;
     };
 
     const handleSaveReason = () => {
-        const { empId, date, type, value } = state.modalData;
-        const reason = reasonInput.value;
+        const { empId, date, type, value } = state.sundayModalData;
+        const reason = qs('#sunday-reason-input').value;
         if (reason) {
             updateWorklog(empId, date, type, value, reason);
-            modal.classList.add('hidden');
-            reasonInput.value = '';
-            state.modalData = null;
-            // Re-render to show the reason icon
+            sundayModal.classList.add('hidden');
             render();
-        } else {
-            alert('Lütfen bir neden belirtin.');
-        }
+        } else { alert('Lütfen bir neden belirtin.'); }
     };
 
-    const handleAddHoliday = async (e) => {
+    const handleSaveSalarySettings = async (e) => {
         e.preventDefault();
-        const input = document.getElementById('new-holiday-date');
-        const date = input.value;
-        if(date) {
-            await api.post('/api/holidays', { date });
-            state.holidays.push(date);
-            state.holidays.sort();
-            render();
-            input.value = '';
-        }
-    };
+        const id = qs('#modal-employee-id').value;
+        const payment_type = qs('#payment-type').value;
+        const fixed_salary = parseFloat(qs('#fixed-salary').value) || 0;
 
-    const handleDeleteHoliday = async (e) => {
-        const deleteBtn = e.target.closest('.delete-holiday-btn');
-        if (deleteBtn && confirm('Bu tatili silmek istediğinizden emin misiniz?')) {
-            const date = deleteBtn.dataset.date;
-            await api.delete(`/api/holidays/${date}`);
-            state.holidays = state.holidays.filter(d => d !== date);
-            render();
-        }
+        await api.put(`/api/employees/${id}`, { payment_type, fixed_salary });
+        salaryModal.classList.add('hidden');
+        // Veriyi yeniden yükleyerek arayüzün güncel olmasını sağla
+        initData();
     };
 
     const handleSaveSettings = async () => {
         const newSettings = {
-            dayRate: parseFloat(dayRateInput.value) || 0,
-            eveningRate: parseFloat(eveningRateInput.value) || 0,
+            dayRate: parseFloat(dayRateInput.value),
+            eveningRate: parseFloat(eveningRateInput.value),
+            minimumWage: parseFloat(minimumWageInput.value),
         };
         await api.post('/api/settings', newSettings);
         state.settings = newSettings;
@@ -513,35 +430,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleFileUpload = async (e, type) => {
         const file = e.target.files[0];
         if (!file) return;
-
         const formData = new FormData();
         formData.append('file', file);
-
         const url = type === 'employee' ? '/api/employees/upload' : '/api/worklogs/upload';
-
         try {
-            const result = await api.upload(url, formData);
-            alert(result.message);
-            // Refresh data after upload
+            alert((await api.upload(url, formData)).message);
             initData();
-        } catch (err) {
-            alert('Dosya yüklenirken bir hata oluştu.');
-        } finally {
-            e.target.value = ''; // Reset file input
-        }
-    };
-
-    // --- DARK MODE ---
-    const initDarkMode = () => {
-        const isDark = localStorage.getItem('darkMode') === 'true';
-        document.documentElement.classList.toggle('dark', isDark);
-        render();
-    };
-
-    const toggleDarkMode = () => {
-        const isDark = document.documentElement.classList.toggle('dark');
-        localStorage.setItem('darkMode', isDark);
-        render();
+        } catch (err) { alert('Hata oluştu.'); }
+        finally { e.target.value = ''; }
     };
 
     // --- INITIALIZATION ---
@@ -556,36 +452,51 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const init = () => {
-        // Set month input
         monthInput.value = state.selectedMonth;
-
-        // Initial render
         initData();
-        initDarkMode();
+        if (localStorage.getItem('darkMode') === 'true') document.documentElement.classList.add('dark');
 
         // Event Listeners
-        tabsContainer.addEventListener('click', handleTabClick);
+        document.addEventListener('click', e => {
+            const tabBtn = e.target.closest('.tab-btn');
+            if(tabBtn) { state.activeTab = tabBtn.dataset.tab; render(); }
+            if(e.target.closest('#dark-mode-toggle')) {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('darkMode', isDark);
+            }
+        });
         monthInput.addEventListener('change', handleMonthChange);
-        darkModeToggle.addEventListener('click', toggleDarkMode);
-        document.getElementById('add-employee-form').addEventListener('submit', handleAddEmployee);
-        document.getElementById('employee-list-container').addEventListener('click', handleDeleteEmployee);
-        document.getElementById('add-holiday-form').addEventListener('submit', handleAddHoliday);
-        document.getElementById('custom-holidays-list').addEventListener('click', handleDeleteHoliday);
-        document.getElementById('worklog-grid-container').addEventListener('change', handleWorklogChange);
-        document.getElementById('save-settings-btn').addEventListener('click', handleSaveSettings);
-        document.getElementById('download-template-btn').addEventListener('click', () => {
-             window.location.href = `/api/worklogs/template/${state.selectedMonth}`;
-        });
-        document.getElementById('export-report-btn').addEventListener('click', () => {
-             window.location.href = `/api/report/export/${state.selectedMonth}`;
-        });
-        document.getElementById('employee-file-upload').addEventListener('change', (e) => handleFileUpload(e, 'employee'));
-        document.getElementById('worklog-file-upload').addEventListener('change', (e) => handleFileUpload(e, 'worklog'));
+        qs('#add-employee-form').addEventListener('submit', handleAddEmployee);
+        employeeListContainer.addEventListener('click', handleEmployeeListClick);
+        worklogGridContainer.addEventListener('change', handleWorklogChange);
+        qs('#save-reason-btn').addEventListener('click', handleSaveReason);
+        qs('#cancel-modal-btn').addEventListener('click', () => sundayModal.classList.add('hidden'));
 
-        // Modal listeners
-        closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
-        cancelModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
-        saveReasonBtn.addEventListener('click', handleSaveReason);
+        // Salary Modal
+        qs('#salary-settings-form').addEventListener('submit', handleSaveSalarySettings);
+        qs('#cancel-salary-modal-btn').addEventListener('click', () => salaryModal.classList.add('hidden'));
+        qs('#close-salary-modal-btn').addEventListener('click', () => salaryModal.classList.add('hidden'));
+        qs('#payment-type').addEventListener('change', e => {
+            qs('#fixed-salary-container').classList.toggle('hidden', !e.target.value.startsWith('sabit_maas'));
+        });
+
+        // Other forms
+        qs('#add-holiday-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const date = qs('#new-holiday-date').value;
+            if(date) { await api.post('/api/holidays', { date }); state.holidays.push(date); state.holidays.sort(); render(); e.target.reset(); }
+        });
+        customHolidaysList.addEventListener('click', async e => {
+            const btn = e.target.closest('.delete-holiday-btn');
+            if(btn && confirm('Bu tatili sil?')) { await api.delete(`/api/holidays/${btn.dataset.date}`); state.holidays = state.holidays.filter(d => d !== btn.dataset.date); render(); }
+        });
+        qs('#save-settings-btn').addEventListener('click', handleSaveSettings);
+
+        // File buttons
+        qs('#download-template-btn').addEventListener('click', () => window.location.href = `/api/worklogs/template/${state.selectedMonth}`);
+        qs('#export-report-btn').addEventListener('click', () => window.location.href = `/api/report/export/${state.selectedMonth}`);
+        qs('#employee-file-upload').addEventListener('change', (e) => handleFileUpload(e, 'employee'));
+        qs('#worklog-file-upload').addEventListener('change', (e) => handleFileUpload(e, 'worklog'));
     };
 
     init();
