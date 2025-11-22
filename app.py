@@ -421,5 +421,56 @@ def export_report(year_month):
     output.seek(0)
     return send_file(output, as_attachment=True, download_name=f'maas-raporu-{year_month}.xlsx')
 
+@app.route('/api/export_all', methods=['GET'])
+def export_all_data():
+    conn = get_db_connection()
+
+    # Verileri çek
+    employees = conn.execute("SELECT id, name, emp_id, payment_type, fixed_salary FROM employees ORDER BY name").fetchall()
+    work_logs = conn.execute("""
+        SELECT e.name, w.date, w.day_hours, w.evening_hours, w.sunday_reason
+        FROM work_logs w JOIN employees e ON w.employee_id = e.id
+        ORDER BY e.name, w.date
+    """).fetchall()
+    holidays = conn.execute("SELECT date FROM holidays ORDER BY date").fetchall()
+    settings = conn.execute("SELECT key, value FROM settings").fetchall()
+
+    conn.close()
+
+    wb = openpyxl.Workbook()
+
+    # Çalışanlar Sayfası
+    ws_employees = wb.active
+    ws_employees.title = "Çalışanlar"
+    ws_employees.append(['ID', 'Ad Soyad', 'Çalışan No', 'Ödeme Tipi', 'Sabit Maaş'])
+    for emp in employees:
+        ws_employees.append([emp['id'], emp['name'], emp['emp_id'], emp['payment_type'], emp['fixed_salary']])
+
+    # Çalışma Saatleri Sayfası
+    ws_worklogs = wb.create_sheet("Çalışma Saatleri")
+    ws_worklogs.append(['Ad Soyad', 'Tarih', 'Gündüz Saati', 'Akşam Saati', 'Pazar Gerekçesi'])
+    for log in work_logs:
+        ws_worklogs.append([log['name'], log['date'], log['day_hours'], log['evening_hours'], log['sunday_reason']])
+
+    # Tatiller Sayfası
+    ws_holidays = wb.create_sheet("Tatiller")
+    ws_holidays.append(['Tarih'])
+    for holiday in holidays:
+        ws_holidays.append([holiday['date']])
+
+    # Ayarlar Sayfası
+    ws_settings = wb.create_sheet("Ayarlar")
+    ws_settings.append(['Ayar', 'Değer'])
+    for setting in settings:
+        ws_settings.append([setting['key'], setting['value']])
+
+    # Dosyayı hafızada oluştur
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return send_file(output, as_attachment=True, download_name=f'fazla_mesai_yedek_{timestamp}.xlsx')
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
