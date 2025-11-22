@@ -207,6 +207,11 @@ def update_work_log():
     emp_id, date, log_type, value, reason = data.get('empId'), data.get('date'), data.get('type'), data.get('value', 0), data.get('reason')
     if not all([emp_id, date, log_type]): return jsonify({'error': 'Eksik parametre.'}), 400
 
+    try:
+        value = int(value or 0)
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Saat değeri tam sayı olmalıdır.'}), 400
+
     field = 'day_hours' if log_type == 'day' else 'evening_hours'
     conn = get_db_connection()
     existing_log = conn.execute("SELECT id FROM work_logs WHERE employee_id = ? AND date = ?", (emp_id, date)).fetchone()
@@ -245,9 +250,16 @@ def upload_worklogs():
             if emp_name in employees:
                 emp_id = employees[emp_name]
                 for i, hours in enumerate(row[1:], 1):
-                    if hours and float(hours) > 0:
-                        date_str = headers[i]
-                        update_work_log_db(conn, emp_id, date_str, type_, float(hours))
+                    if hours:
+                        try:
+                            # Değeri önce float'a çevirip sonra int'e yuvarlayarak ondalıklı girişleri de kabul et
+                            hours_val = int(float(hours))
+                            if hours_val > 0:
+                                date_str = headers[i]
+                                update_work_log_db(conn, emp_id, date_str, type_, hours_val)
+                        except (ValueError, TypeError):
+                            # Hatalı formatı görmezden gel ve devam et
+                            continue
 
     process_sheet('Gündüz Mesaisi', 'day')
     process_sheet('Akşam Mesaisi', 'evening')
