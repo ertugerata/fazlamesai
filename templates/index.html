@@ -66,7 +66,10 @@
                 <div class="flex items-center gap-4">
                     <input type="month" id="selected-month" class="px-4 py-2 border rounded-lg dark:bg-slate-700">
                     <button id="export-report-btn" class="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg">
-                        <i data-lucide="download"></i> Dışa Aktar
+                        <i data-lucide="download"></i> Raporu Aktar
+                    </button>
+                     <button id="export-all-btn" class="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg">
+                        <i data-lucide="archive"></i> Tüm Veriyi Aktar
                     </button>
                     <button id="dark-mode-toggle" class="p-2 rounded-lg bg-blue-100 dark:bg-slate-700">
                          <i data-lucide="sun" class="hidden dark:inline"></i><i data-lucide="moon" class="inline dark:hidden"></i>
@@ -532,6 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // File buttons
         qs('#download-template-btn').addEventListener('click', () => window.location.href = `/api/worklogs/template/${state.selectedMonth}`);
         qs('#export-report-btn').addEventListener('click', () => window.location.href = `/api/report/export/${state.selectedMonth}`);
+        qs('#export-all-btn').addEventListener('click', () => window.location.href = '/api/export_all');
         qs('#employee-file-upload').addEventListener('change', (e) => handleFileUpload(e, 'employee'));
         qs('#worklog-file-upload').addEventListener('change', (e) => handleFileUpload(e, 'worklog'));
     };
