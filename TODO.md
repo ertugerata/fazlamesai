@@ -1,4 +1,4 @@
 ## yapılacakları buraya yaz
 
-- [ ] shell.nix ten flask kurulumunu kaldır.
-- [ ] Tüm verileri excel dosyası olarak aktar.
+- [x] shell.nix ten flask kurulumunu kaldır.
+- [x] Tüm verileri excel dosyası olarak aktar.
