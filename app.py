@@ -4,8 +4,20 @@ from flask import Flask, render_template, request, jsonify, send_file
 from database import init_db, get_db_connection
 import json
 import os
+import logging
+from dotenv import load_dotenv
 from datetime import datetime, date
 from io import BytesIO
+
+# --- Configuration & Logging (12 Factor) ---
+load_dotenv()
+
+# Loglama yapılandırması (stdout)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # --- Constants ---
 OFFICIAL_HOLIDAYS_2025 = [
@@ -28,12 +40,16 @@ OFFICIAL_HOLIDAYS_2025 = [
     {'date': '2025-10-29', 'description': 'Cumhuriyet Bayramı'},
 ]
 
-# Uygulamayı başlatmadan önce veritabanının var olduğundan emin ol
-if not os.path.exists('overtime.db'):
-    print("Veritabanı bulunamadı, oluşturuluyor...")
-    init_db()
-
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
+
+# Veritabanı dosyası konfigürasyonu
+DB_FILE = os.getenv('DATABASE_FILE', 'overtime.db')
+
+# Uygulamayı başlatmadan önce veritabanının var olduğundan emin ol
+if not os.path.exists(DB_FILE):
+    logger.info(f"Veritabanı ({DB_FILE}) bulunamadı, oluşturuluyor...")
+    init_db()
 
 # --- Helper Functions ---
 def get_days_in_month(year_month):
@@ -700,4 +716,6 @@ def export_all_data():
     return send_file(output, as_attachment=True, download_name=f'fazla_mesai_yedek_{timestamp}.xlsx')
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    port = int(os.getenv('PORT', 5000))
+    debug_mode = os.getenv('FLASK_DEBUG', 'True').lower() in ('true', '1', 't')
+    app.run(debug=debug_mode, port=port, host='0.0.0.0')
