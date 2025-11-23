@@ -45,6 +45,7 @@
                         <option value="yalnizca_fazla_mesai">Yalnızca Fazla Mesai</option>
                         <option value="asgari_ucret_sabit_saat">Asgari Ücret + Sabit Fazla Mesai Saati</option>
                         <option value="asgari_ucret_sabit_ucret">Asgari Ücret + Sabit Fazla Mesai Ücreti</option>
+                        <option value="asgari_ucret_ders_saati_nobet">Asgari Ücret + Ders Saati + Nöbet</option>
                     </select>
                 </div>
                 <div id="fixed-salary-container" class="hidden">
@@ -58,6 +59,16 @@
                 <div id="fixed-overtime-pay-container" class="hidden">
                     <label for="fixed-overtime-pay" class="block mb-2 font-semibold">Sabit Fazla Mesai Ücreti (₺)</label>
                     <input type="number" id="fixed-overtime-pay" class="w-full p-2 border rounded bg-white dark:bg-slate-700" step="0.01">
+                </div>
+                 <div id="fixed-lesson-hours-container" class="hidden grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="fixed-day-hours" class="block mb-2 font-semibold">Gündüz Sabit Ders Saati</label>
+                        <input type="number" id="fixed-day-hours" class="w-full p-2 border rounded bg-white dark:bg-slate-700" step="0.5">
+                    </div>
+                    <div>
+                        <label for="fixed-evening-hours" class="block mb-2 font-semibold">Akşam Sabit Ders Saati</label>
+                        <input type="number" id="fixed-evening-hours" class="w-full p-2 border rounded bg-white dark:bg-slate-700" step="0.5">
+                    </div>
                 </div>
                 <div class="flex justify-end gap-2 pt-4">
                     <button type="button" id="cancel-salary-modal-btn" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded-lg">İptal</button>
@@ -195,7 +206,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'sabit_maas_nobet': 'Sabit Maaş + Nöbet',
         'yalnizca_fazla_mesai': 'Yalnızca Fazla Mesai',
         'asgari_ucret_sabit_saat': 'Asgari Ücret + Sabit Fazla Mesai Saati',
-        'asgari_ucret_sabit_ucret': 'Asgari Ücret + Sabit Fazla Mesai Ücreti'
+        'asgari_ucret_sabit_ucret': 'Asgari Ücret + Sabit Fazla Mesai Ücreti',
+        'asgari_ucret_ders_saati_nobet': 'Asgari Ücret + Ders Saati + Nöbet'
     };
 
 
@@ -383,6 +395,8 @@ document.addEventListener('DOMContentLoaded', () => {
             qs('#fixed-salary').value = emp.fixed_salary || 0;
             qs('#fixed-hours').value = emp.fixed_hours || 0;
             qs('#fixed-overtime-pay').value = emp.fixed_overtime_pay || 0;
+            qs('#fixed-day-hours').value = emp.fixed_day_hours || 0;
+            qs('#fixed-evening-hours').value = emp.fixed_evening_hours || 0;
 
             updateSalaryModalFields(paymentTypeSelect.value);
             salaryModal.classList.remove('hidden');
@@ -467,8 +481,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const fixed_salary = parseFloat(qs('#fixed-salary').value) || 0;
         const fixed_hours = parseFloat(qs('#fixed-hours').value) || 0;
         const fixed_overtime_pay = parseFloat(qs('#fixed-overtime-pay').value) || 0;
+        const fixed_day_hours = parseFloat(qs('#fixed-day-hours').value) || 0;
+        const fixed_evening_hours = parseFloat(qs('#fixed-evening-hours').value) || 0;
 
-        await api.put(`/api/employees/${id}`, { payment_type, fixed_salary, fixed_hours, fixed_overtime_pay });
+        await api.put(`/api/employees/${id}`, { payment_type, fixed_salary, fixed_hours, fixed_overtime_pay, fixed_day_hours, fixed_evening_hours });
         salaryModal.classList.add('hidden');
         // Veriyi yeniden yükleyerek arayüzün güncel olmasını sağla
         initData();
@@ -478,6 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
         qs('#fixed-salary-container').classList.toggle('hidden', !type.startsWith('sabit_maas'));
         qs('#fixed-hours-container').classList.toggle('hidden', type !== 'asgari_ucret_sabit_saat');
         qs('#fixed-overtime-pay-container').classList.toggle('hidden', type !== 'asgari_ucret_sabit_ucret');
+        qs('#fixed-lesson-hours-container').classList.toggle('hidden', type !== 'asgari_ucret_ders_saati_nobet');
     };
 
     const handleSaveSettings = async () => {
