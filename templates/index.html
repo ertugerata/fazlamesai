@@ -29,7 +29,7 @@
 
     <!-- Çalışan Maaş Ayarları Modalı -->
     <div id="salary-settings-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-lg">
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-lg overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center mb-4">
                 <h3 id="modal-title" class="text-xl font-bold dark:text-white">Maaş Ayarları</h3>
                 <button id="close-salary-modal-btn" class="text-gray-400 hover:text-red-500">&times;</button>
@@ -37,30 +37,24 @@
             <form id="salary-settings-form" class="space-y-4">
                 <input type="hidden" id="modal-employee-id">
                 <div>
-                    <label for="payment-type" class="block mb-2 font-semibold">Ödeme Tipi</label>
-                    <select id="payment-type" class="w-full p-2 border rounded bg-white dark:bg-slate-700">
-                        <option value="asgari_ucret_fazla_mesai">Asgari Ücret + Fazla Mesai</option>
-                        <option value="sabit_maas">Yalnızca Sabit Maaş</option>
-                        <option value="sabit_maas_nobet">Sabit Maaş + Nöbet</option>
-                        <option value="yalnizca_fazla_mesai">Yalnızca Fazla Mesai</option>
-                        <option value="asgari_ucret_sabit_saat">Asgari Ücret + Sabit Fazla Mesai Saati</option>
-                        <option value="asgari_ucret_sabit_ucret">Asgari Ücret + Sabit Fazla Mesai Ücreti</option>
-                        <option value="asgari_ucret_ders_saati_nobet">Asgari Ücret + Ders Saati + Nöbet</option>
+                    <label for="payment-type-select" class="block mb-2 font-semibold">Ödeme Tipi (Maaş Opsiyonu)</label>
+                    <select id="payment-type-select" class="w-full p-2 border rounded bg-white dark:bg-slate-700">
+                        <!-- JS ile doldurulacak -->
                     </select>
                 </div>
+
+                <!-- Dinamik Alanlar -->
                 <div id="fixed-salary-container" class="hidden">
                     <label for="fixed-salary" class="block mb-2 font-semibold">Sabit Maaş Tutarı (₺)</label>
                     <input type="number" id="fixed-salary" class="w-full p-2 border rounded bg-white dark:bg-slate-700" step="0.01">
                 </div>
-                <div id="fixed-hours-container" class="hidden">
-                    <label for="fixed-hours" class="block mb-2 font-semibold">Sabit Fazla Mesai Saati</label>
-                    <input type="number" id="fixed-hours" class="w-full p-2 border rounded bg-white dark:bg-slate-700" step="0.5">
-                </div>
+
                 <div id="fixed-overtime-pay-container" class="hidden">
                     <label for="fixed-overtime-pay" class="block mb-2 font-semibold">Sabit Fazla Mesai Ücreti (₺)</label>
                     <input type="number" id="fixed-overtime-pay" class="w-full p-2 border rounded bg-white dark:bg-slate-700" step="0.01">
                 </div>
-                 <div id="fixed-lesson-hours-container" class="hidden grid grid-cols-2 gap-4">
+
+                 <div id="fixed-hours-quota-container" class="hidden grid grid-cols-2 gap-4">
                     <div>
                         <label for="fixed-day-hours" class="block mb-2 font-semibold">Gündüz Sabit Ders Saati</label>
                         <input type="number" id="fixed-day-hours" class="w-full p-2 border rounded bg-white dark:bg-slate-700" step="0.5">
@@ -70,9 +64,53 @@
                         <input type="number" id="fixed-evening-hours" class="w-full p-2 border rounded bg-white dark:bg-slate-700" step="0.5">
                     </div>
                 </div>
+
                 <div class="flex justify-end gap-2 pt-4">
                     <button type="button" id="cancel-salary-modal-btn" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded-lg">İptal</button>
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Yeni Maaş Opsiyonu Ekleme Modalı -->
+    <div id="new-salary-type-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-lg">
+            <h3 class="text-xl font-bold dark:text-white mb-4">Yeni Maaş Opsiyonu Ekle</h3>
+            <form id="new-salary-type-form" class="space-y-4">
+                <div>
+                    <label class="block font-semibold mb-1">Opsiyon Adı</label>
+                    <input type="text" id="new-type-name" class="w-full p-2 border rounded dark:bg-slate-700" required placeholder="Örn: Asgari + Nöbet">
+                </div>
+                <div class="grid grid-cols-1 gap-2">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="check-min-wage" class="w-4 h-4">
+                        <span>Asgari Ücret Dahil</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="check-fixed-salary" class="w-4 h-4">
+                        <span>Sabit Maaş (Kişiye Özel Tutar)</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="check-fixed-ot-pay" class="w-4 h-4">
+                        <span>Sabit Ek Ders Ücreti (Kişiye Özel Tutar)</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="check-fixed-quota" class="w-4 h-4">
+                        <span>Sabit Ek Ders Saati (Gündüz/Akşam Kotaları)</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="check-ot-calc" class="w-4 h-4">
+                        <span>Fazla Mesai Ücreti (Saat Bazlı Hesaplama)</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="check-on-call" class="w-4 h-4">
+                        <span>Nöbet (Hafta Sonu/Tatil Çalışması)</span>
+                    </label>
+                </div>
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" id="cancel-new-type-btn" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded-lg">İptal</button>
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg">Ekle</button>
                 </div>
             </form>
         </div>
@@ -99,12 +137,12 @@
             </div>
 
             <!-- Sekmeler -->
-            <div id="tabs" class="flex gap-4 border-b border-gray-200 dark:border-slate-700">
-                <button data-tab="employees" class="tab-btn">Çalışanlar</button>
-                <button data-tab="worklog" class="tab-btn">Çalışma Saatleri</button>
-                <button data-tab="holidays" class="tab-btn">Tatil Günleri</button>
-                <button data-tab="report" class="tab-btn">Rapor</button>
-                <button data-tab="settings" class="tab-btn">Ayarlar</button>
+            <div id="tabs" class="flex gap-4 border-b border-gray-200 dark:border-slate-700 overflow-x-auto">
+                <button data-tab="employees" class="tab-btn whitespace-nowrap">Çalışanlar</button>
+                <button data-tab="worklog" class="tab-btn whitespace-nowrap">Çalışma Saatleri</button>
+                <button data-tab="holidays" class="tab-btn whitespace-nowrap">Tatil Günleri</button>
+                <button data-tab="report" class="tab-btn whitespace-nowrap">Rapor</button>
+                <button data-tab="settings" class="tab-btn whitespace-nowrap">Ayarlar</button>
             </div>
 
             <!-- Sekme İçerikleri -->
@@ -160,20 +198,37 @@
 
                 <!-- Ayarlar Sekmesi -->
                 <div id="settings-tab" class="tab-content hidden">
-                    <div class="space-y-4 max-w-md">
-                        <div>
-                            <label for="minimumWage" class="block font-semibold">Asgari Ücret (Aylık)</label>
-                            <input type="number" id="minimumWage" class="w-full p-2 border rounded dark:bg-slate-700">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Genel Ayarlar -->
+                        <div class="space-y-4 max-w-md">
+                            <h3 class="font-bold text-xl border-b pb-2">Genel Maaş Ayarları</h3>
+                            <div>
+                                <label for="minimumWage" class="block font-semibold">Asgari Ücret (Aylık)</label>
+                                <input type="number" id="minimumWage" class="w-full p-2 border rounded dark:bg-slate-700">
+                            </div>
+                            <div>
+                                <label for="dayRate" class="block font-semibold">Gündüz Fazla Mesai Saat Ücreti (₺)</label>
+                                <input type="number" id="dayRate" class="w-full p-2 border rounded dark:bg-slate-700">
+                            </div>
+                            <div>
+                                <label for="eveningRate" class="block font-semibold">Akşam/Hafta Sonu Saat Ücreti (₺)</label>
+                                <input type="number" id="eveningRate" class="w-full p-2 border rounded dark:bg-slate-700">
+                            </div>
+                            <button id="save-settings-btn" class="p-2 bg-blue-600 text-white rounded-lg">Ayarları Kaydet</button>
                         </div>
-                        <div>
-                            <label for="dayRate" class="block font-semibold">Gündüz Fazla Mesai Saat Ücreti (₺)</label>
-                            <input type="number" id="dayRate" class="w-full p-2 border rounded dark:bg-slate-700">
+
+                        <!-- Maaş Opsiyonları Yönetimi -->
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center border-b pb-2">
+                                <h3 class="font-bold text-xl">Maaş Opsiyonları</h3>
+                                <button id="add-salary-type-btn" class="px-3 py-1 bg-green-600 text-white rounded text-sm flex items-center gap-1">
+                                    <i data-lucide="plus" class="w-4 h-4"></i> Yeni Opsiyon
+                                </button>
+                            </div>
+                            <div id="salary-types-list" class="space-y-2 max-h-[400px] overflow-y-auto">
+                                <!-- JS Populated -->
+                            </div>
                         </div>
-                        <div>
-                            <label for="eveningRate" class="block font-semibold">Akşam/Hafta Sonu Saat Ücreti (₺)</label>
-                            <input type="number" id="eveningRate" class="w-full p-2 border rounded dark:bg-slate-700">
-                        </div>
-                        <button id="save-settings-btn" class="p-2 bg-blue-600 text-white rounded-lg">Ayarları Kaydet</button>
                     </div>
                 </div>
             </div>
@@ -188,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         workLogs: {},
         holidays: [],
         settings: { dayRate: 100, eveningRate: 120, minimumWage: 17002 },
+        salaryTypes: [],
         activeTab: 'employees',
         selectedMonth: new Date().toISOString().slice(0, 7),
         sundayModalData: null,
@@ -204,16 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { date: '2025-09-07', description: 'Kurban Bayramı' }, { date: '2025-09-08', description: 'Kurban Bayramı' },
         { date: '2025-10-29', description: 'Cumhuriyet Bayramı' },
     ];
-    const PAYMENT_TYPE_MAP = {
-        'asgari_ucret_fazla_mesai': 'Asgari Ücret + Fazla Mesai',
-        'sabit_maas': 'Yalnızca Sabit Maaş',
-        'sabit_maas_nobet': 'Sabit Maaş + Nöbet',
-        'yalnizca_fazla_mesai': 'Yalnızca Fazla Mesai',
-        'asgari_ucret_sabit_saat': 'Asgari Ücret + Sabit Fazla Mesai Saati',
-        'asgari_ucret_sabit_ucret': 'Asgari Ücret + Sabit Fazla Mesai Ücreti',
-        'asgari_ucret_ders_saati_nobet': 'Asgari Ücret + Ders Saati + Nöbet'
-    };
-
 
     // --- SELECTORS ---
     const qs = (selector) => document.querySelector(selector);
@@ -223,6 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const reportContainer = qs('#report-container');
     const customHolidaysList = qs('#custom-holidays-list');
     const officialHolidaysList = qs('#official-holidays-list');
+    const salaryTypesList = qs('#salary-types-list');
     const dayRateInput = qs('#dayRate');
     const eveningRateInput = qs('#eveningRate');
     const minimumWageInput = qs('#minimumWage');
@@ -230,6 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Modals
     const sundayModal = qs('#sunday-reason-modal');
     const salaryModal = qs('#salary-settings-modal');
+    const newSalaryTypeModal = qs('#new-salary-type-modal');
 
     // --- API HELPERS ---
     const api = {
@@ -270,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${state.employees.map(emp => `
                     <div class="flex items-center justify-between bg-white dark:bg-slate-800/50 p-3 rounded-lg">
                         <div>
-                            <p class="font-semibold">${emp.name} <span class="text-sm text-gray-500">(${PAYMENT_TYPE_MAP[emp.payment_type]})</span></p>
+                            <p class="font-semibold">${emp.name} <span class="text-sm text-gray-500">(${emp.salary_type_name || 'Opsiyon Seçilmedi'})</span></p>
                             <div class="text-xs text-gray-400 flex gap-2">
                                 ${emp.emp_id ? `<span>No: ${emp.emp_id}</span>` : ''}
                                 ${emp.branch ? `<span>Branş: ${emp.branch}</span>` : ''}
@@ -336,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         reportContainer.innerHTML = reportData.map(calc => `
              <div class="bg-white dark:bg-slate-800/50 p-4 rounded-lg">
-                <h3 class="font-bold text-xl mb-2">${calc.name} <span class="text-base font-normal text-gray-500">- ${PAYMENT_TYPE_MAP[calc.paymentType]}</span></h3>
+                <h3 class="font-bold text-xl mb-2">${calc.name} <span class="text-base font-normal text-gray-500">- ${calc.paymentType}</span></h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     ${(calc.fixedSalary > 0 || calc.minimumWage > 0) ? `
                     <div class="bg-slate-100 dark:bg-slate-700 p-3 rounded">
@@ -361,6 +409,29 @@ document.addEventListener('DOMContentLoaded', () => {
         dayRateInput.value = state.settings.dayRate;
         eveningRateInput.value = state.settings.eveningRate;
         minimumWageInput.value = state.settings.minimumWage;
+
+        // Salary Types List
+        salaryTypesList.innerHTML = state.salaryTypes.map(t => `
+            <div class="bg-slate-100 dark:bg-slate-700 p-3 rounded flex justify-between items-center">
+                <div>
+                    <div class="font-bold">${t.name}</div>
+                    <div class="text-xs text-gray-500">
+                        ${[
+                            t.include_min_wage ? 'Asgari' : '',
+                            t.include_fixed_salary ? 'Sabit Maaş' : '',
+                            t.include_fixed_overtime_pay ? 'Sabit FM Ücreti' : '',
+                            t.include_fixed_hours_quota ? 'Sabit Ders Kota' : '',
+                            t.include_overtime_calc ? 'FM Hesapla' : '',
+                            t.include_on_call ? 'Nöbet' : ''
+                        ].filter(Boolean).join(', ')}
+                    </div>
+                </div>
+                <button class="delete-salary-type-btn text-red-500 p-2 hover:bg-slate-200 dark:hover:bg-slate-600 rounded" data-id="${t.id}">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </div>
+        `).join('') || '<p class="text-sm text-gray-500">Kayıtlı opsiyon yok.</p>';
+        lucide.createIcons();
     };
 
     // --- EVENT HANDLERS ---
@@ -397,16 +468,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const emp = state.employees.find(e => e.id == settingsBtn.dataset.id);
             qs('#modal-title').innerText = `${emp.name} - Maaş Ayarları`;
             qs('#modal-employee-id').value = emp.id;
-            const paymentTypeSelect = qs('#payment-type');
-            paymentTypeSelect.value = emp.payment_type;
+            const paymentTypeSelect = qs('#payment-type-select');
+
+            // Populate select
+            paymentTypeSelect.innerHTML = state.salaryTypes.map(t =>
+                `<option value="${t.id}" ${t.id == emp.salary_type_id ? 'selected' : ''}>${t.name}</option>`
+            ).join('');
 
             qs('#fixed-salary').value = emp.fixed_salary || 0;
-            qs('#fixed-hours').value = emp.fixed_hours || 0;
             qs('#fixed-overtime-pay').value = emp.fixed_overtime_pay || 0;
             qs('#fixed-day-hours').value = emp.fixed_day_hours || 0;
             qs('#fixed-evening-hours').value = emp.fixed_evening_hours || 0;
 
-            updateSalaryModalFields(paymentTypeSelect.value);
+            updateSalaryModalFields(emp.salary_type_id);
             salaryModal.classList.remove('hidden');
         }
     };
@@ -424,7 +498,6 @@ document.addEventListener('DOMContentLoaded', () => {
             updateWorklog(empId, date, type, value);
         }
 
-        // Nöbet saati kontrolü
         const d = new Date(date);
         const isWeekendOrHoliday = d.getDay() === 0 || d.getDay() === 6 || state.holidays.includes(date) || OFFICIAL_HOLIDAYS_2025.some(h => h.date === date);
         if (isWeekendOrHoliday) {
@@ -455,7 +528,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (watchHours > (workedDays / 2)) {
-            // setTimeout, o anki event döngüsü bittikten sonra çalışır, bu da input'un değerinin güncellenmesini sağlar.
             setTimeout(() => {
                 alert(`Uyarı: Bu ayki nöbet saati (${watchHours} saat), çalışılan gün sayısının (${workedDays} gün) yarısını aştı.`);
             }, 0);
@@ -485,24 +557,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleSaveSalarySettings = async (e) => {
         e.preventDefault();
         const id = qs('#modal-employee-id').value;
-        const payment_type = qs('#payment-type').value;
+        const salary_type_id = qs('#payment-type-select').value;
         const fixed_salary = parseFloat(qs('#fixed-salary').value) || 0;
-        const fixed_hours = parseFloat(qs('#fixed-hours').value) || 0;
         const fixed_overtime_pay = parseFloat(qs('#fixed-overtime-pay').value) || 0;
         const fixed_day_hours = parseFloat(qs('#fixed-day-hours').value) || 0;
         const fixed_evening_hours = parseFloat(qs('#fixed-evening-hours').value) || 0;
 
-        await api.put(`/api/employees/${id}`, { payment_type, fixed_salary, fixed_hours, fixed_overtime_pay, fixed_day_hours, fixed_evening_hours });
+        await api.put(`/api/employees/${id}`, { salary_type_id, fixed_salary, fixed_overtime_pay, fixed_day_hours, fixed_evening_hours });
         salaryModal.classList.add('hidden');
-        // Veriyi yeniden yükleyerek arayüzün güncel olmasını sağla
         initData();
     };
 
-    const updateSalaryModalFields = (type) => {
-        qs('#fixed-salary-container').classList.toggle('hidden', !type.startsWith('sabit_maas'));
-        qs('#fixed-hours-container').classList.toggle('hidden', type !== 'asgari_ucret_sabit_saat');
-        qs('#fixed-overtime-pay-container').classList.toggle('hidden', type !== 'asgari_ucret_sabit_ucret');
-        qs('#fixed-lesson-hours-container').classList.toggle('hidden', type !== 'asgari_ucret_ders_saati_nobet');
+    const updateSalaryModalFields = (typeId) => {
+        const type = state.salaryTypes.find(t => t.id == typeId);
+        if (!type) return;
+
+        qs('#fixed-salary-container').classList.toggle('hidden', !type.include_fixed_salary);
+        qs('#fixed-overtime-pay-container').classList.toggle('hidden', !type.include_fixed_overtime_pay);
+        qs('#fixed-hours-quota-container').classList.toggle('hidden', !type.include_fixed_hours_quota);
     };
 
     const handleSaveSettings = async () => {
@@ -529,13 +601,40 @@ document.addEventListener('DOMContentLoaded', () => {
         finally { e.target.value = ''; }
     };
 
+    const handleAddSalaryType = async (e) => {
+        e.preventDefault();
+        const name = qs('#new-type-name').value;
+        if(!name) return;
+
+        const payload = {
+            name,
+            include_min_wage: qs('#check-min-wage').checked ? 1 : 0,
+            include_fixed_salary: qs('#check-fixed-salary').checked ? 1 : 0,
+            include_fixed_overtime_pay: qs('#check-fixed-ot-pay').checked ? 1 : 0,
+            include_fixed_hours_quota: qs('#check-fixed-quota').checked ? 1 : 0,
+            include_overtime_calc: qs('#check-ot-calc').checked ? 1 : 0,
+            include_on_call: qs('#check-on-call').checked ? 1 : 0,
+        };
+
+        try {
+            await api.post('/api/salary_types', payload);
+            newSalaryTypeModal.classList.add('hidden');
+            state.salaryTypes = await api.get('/api/salary_types');
+            render();
+            e.target.reset();
+        } catch(err) {
+            alert("Hata oluştu.");
+        }
+    };
+
     // --- INITIALIZATION ---
     const initData = async () => {
-        [state.employees, state.workLogs, state.holidays, state.settings] = await Promise.all([
+        [state.employees, state.workLogs, state.holidays, state.settings, state.salaryTypes] = await Promise.all([
             api.get('/api/employees'),
             api.get(`/api/worklogs/${state.selectedMonth}`),
             api.get('/api/holidays'),
-            api.get('/api/settings')
+            api.get('/api/settings'),
+            api.get('/api/salary_types')
         ]);
         render();
     };
@@ -546,12 +645,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (localStorage.getItem('darkMode') === 'true') document.documentElement.classList.add('dark');
 
         // Event Listeners
-        document.addEventListener('click', e => {
+        document.addEventListener('click', async e => {
             const tabBtn = e.target.closest('.tab-btn');
             if(tabBtn) { state.activeTab = tabBtn.dataset.tab; render(); }
             if(e.target.closest('#dark-mode-toggle')) {
                 const isDark = document.documentElement.classList.toggle('dark');
                 localStorage.setItem('darkMode', isDark);
+            }
+            if(e.target.closest('.delete-salary-type-btn')) {
+                const id = e.target.closest('.delete-salary-type-btn').dataset.id;
+                if(confirm('Silmek istiyor musunuz?')) {
+                    try {
+                        await api.delete(`/api/salary_types/${id}`);
+                        state.salaryTypes = state.salaryTypes.filter(t => t.id != id);
+                        render();
+                    } catch(err) {
+                        alert((await err.json()).error);
+                    }
+                }
             }
         });
         monthInput.addEventListener('change', handleMonthChange);
@@ -565,9 +676,14 @@ document.addEventListener('DOMContentLoaded', () => {
         qs('#salary-settings-form').addEventListener('submit', handleSaveSalarySettings);
         qs('#cancel-salary-modal-btn').addEventListener('click', () => salaryModal.classList.add('hidden'));
         qs('#close-salary-modal-btn').addEventListener('click', () => salaryModal.classList.add('hidden'));
-        qs('#payment-type').addEventListener('change', e => {
+        qs('#payment-type-select').addEventListener('change', e => {
             updateSalaryModalFields(e.target.value);
         });
+
+        // New Salary Type Modal
+        qs('#add-salary-type-btn').addEventListener('click', () => newSalaryTypeModal.classList.remove('hidden'));
+        qs('#cancel-new-type-btn').addEventListener('click', () => newSalaryTypeModal.classList.add('hidden'));
+        qs('#new-salary-type-form').addEventListener('submit', handleAddSalaryType);
 
         // Other forms
         qs('#add-holiday-form').addEventListener('submit', async e => {
