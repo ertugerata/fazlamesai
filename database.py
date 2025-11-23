@@ -17,6 +17,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             emp_id TEXT,
+            branch TEXT,
             payment_type TEXT DEFAULT 'asgari_ucret_fazla_mesai',
             fixed_salary REAL DEFAULT 0,
             fixed_hours REAL DEFAULT 0,
@@ -45,6 +46,10 @@ def init_db():
     if 'fixed_evening_hours' not in columns:
         print("Migrating: Adding fixed_evening_hours column to employees table...")
         cursor.execute("ALTER TABLE employees ADD COLUMN fixed_evening_hours REAL DEFAULT 0")
+
+    if 'branch' not in columns:
+        print("Migrating: Adding branch column to employees table...")
+        cursor.execute("ALTER TABLE employees ADD COLUMN branch TEXT")
 
     # Work Logs tablosu
     cursor.execute('''

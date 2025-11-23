@@ -114,10 +114,14 @@
                      <form id="add-employee-form" class="mb-6 flex gap-2">
                         <input type="text" id="new-employee-name" placeholder="Ad Soyad" required class="flex-grow p-2 border rounded dark:bg-slate-700">
                         <input type="text" id="new-employee-id" placeholder="Çalışan No" class="p-2 border rounded dark:bg-slate-700">
+                        <input type="text" id="new-employee-branch" placeholder="Branş" class="p-2 border rounded dark:bg-slate-700">
                         <button type="submit" class="p-2 bg-blue-600 text-white rounded-lg">Ekle</button>
                     </form>
-                    <input type="file" id="employee-file-upload" class="hidden" accept=".xlsx,.xls">
-                    <label for="employee-file-upload" class="cursor-pointer mb-6 p-2 bg-green-500 text-white rounded-lg inline-block">Excel'den Yükle</label>
+                    <div class="flex gap-2 mb-6">
+                         <input type="file" id="employee-file-upload" class="hidden" accept=".xlsx,.xls">
+                        <label for="employee-file-upload" class="cursor-pointer p-2 bg-green-500 text-white rounded-lg inline-block">Excel'den Yükle</label>
+                        <button id="download-employee-template-btn" class="p-2 bg-blue-600 text-white rounded-lg">Şablon İndir</button>
+                    </div>
                     <div id="employee-list-container"></div>
                 </div>
 
@@ -267,7 +271,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="flex items-center justify-between bg-white dark:bg-slate-800/50 p-3 rounded-lg">
                         <div>
                             <p class="font-semibold">${emp.name} <span class="text-sm text-gray-500">(${PAYMENT_TYPE_MAP[emp.payment_type]})</span></p>
-                            ${emp.emp_id ? `<p class="text-xs text-gray-400">No: ${emp.emp_id}</p>` : ''}
+                            <div class="text-xs text-gray-400 flex gap-2">
+                                ${emp.emp_id ? `<span>No: ${emp.emp_id}</span>` : ''}
+                                ${emp.branch ? `<span>Branş: ${emp.branch}</span>` : ''}
+                            </div>
                         </div>
                         <div class="flex gap-2">
                             <button class="salary-settings-btn p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded" data-id="${emp.id}"><i data-lucide="settings-2"></i></button>
@@ -367,8 +374,9 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const name = qs('#new-employee-name').value;
         const emp_id = qs('#new-employee-id').value;
+        const branch = qs('#new-employee-branch').value;
         if (name) {
-            const newEmp = await api.post('/api/employees', { name, emp_id });
+            const newEmp = await api.post('/api/employees', { name, emp_id, branch });
             state.employees.push(newEmp);
             render();
             e.target.reset();
@@ -575,6 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // File buttons
         qs('#download-template-btn').addEventListener('click', () => window.location.href = `/api/worklogs/template/${state.selectedMonth}`);
+        qs('#download-employee-template-btn').addEventListener('click', () => window.location.href = '/api/employees/template');
         qs('#export-report-btn').addEventListener('click', () => window.location.href = `/api/report/export/${state.selectedMonth}`);
         qs('#export-all-btn').addEventListener('click', () => window.location.href = '/api/export_all');
         qs('#employee-file-upload').addEventListener('change', (e) => handleFileUpload(e, 'employee'));
