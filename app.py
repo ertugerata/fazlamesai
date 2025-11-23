@@ -81,7 +81,7 @@ def update_settings():
 @app.route('/api/employees', methods=['GET'])
 def get_employees():
     conn = get_db_connection()
-    employees = conn.execute('SELECT id, name, emp_id, payment_type, fixed_salary FROM employees ORDER BY name').fetchall()
+    employees = conn.execute('SELECT id, name, emp_id, payment_type, fixed_salary, fixed_hours, fixed_overtime_pay FROM employees ORDER BY name').fetchall()
     conn.close()
     return jsonify([dict(emp) for emp in employees])
 
@@ -97,7 +97,7 @@ def add_employee():
     new_id = cursor.lastrowid
     conn.close()
     # Yeni eklenen çalışanın tam bilgisini dön
-    new_employee = {'id': new_id, 'name': name, 'emp_id': emp_id, 'payment_type': 'asgari_ucret_fazla_mesai', 'fixed_salary': 0}
+    new_employee = {'id': new_id, 'name': name, 'emp_id': emp_id, 'payment_type': 'asgari_ucret_fazla_mesai', 'fixed_salary': 0, 'fixed_hours': 0, 'fixed_overtime_pay': 0}
     return jsonify(new_employee), 201
 
 @app.route('/api/employees/<int:id>', methods=['PUT'])
@@ -105,11 +105,13 @@ def update_employee(id):
     data = request.json
     payment_type = data.get('payment_type')
     fixed_salary = data.get('fixed_salary')
+    fixed_hours = data.get('fixed_hours')
+    fixed_overtime_pay = data.get('fixed_overtime_pay')
 
     conn = get_db_connection()
     conn.execute(
-        "UPDATE employees SET payment_type = ?, fixed_salary = ? WHERE id = ?",
-        (payment_type, fixed_salary, id)
+        "UPDATE employees SET payment_type = ?, fixed_salary = ?, fixed_hours = ?, fixed_overtime_pay = ? WHERE id = ?",
+        (payment_type, fixed_salary, fixed_hours, fixed_overtime_pay, id)
     )
     conn.commit()
     conn.close()
@@ -343,6 +345,8 @@ def calculate_payment_for_employee(emp, year_month, logs, custom_holidays, setti
 
     payment_type = emp['payment_type']
     fixed_salary = float(emp['fixed_salary'] or 0)
+    fixed_hours = float(emp['fixed_hours'] or 0)
+    fixed_overtime_pay = float(emp['fixed_overtime_pay'] or 0)
     day_rate = settings.get('dayRate', 0)
     evening_rate = settings.get('eveningRate', 0)
 
@@ -350,6 +354,7 @@ def calculate_payment_for_employee(emp, year_month, logs, custom_holidays, setti
     overtime_payment = 0
     total_payment = 0
     calculation_details = ""
+    minimum_wage = settings.get('minimumWage', 0)
 
     # Yalnızca Fazla Mesai
     if payment_type == 'yalnizca_fazla_mesai':
@@ -366,7 +371,7 @@ def calculate_payment_for_employee(emp, year_month, logs, custom_holidays, setti
 
         overtime_hours = extra_weekday_day + weekday_evening + weekend_day + weekend_evening
         overtime_payment = (extra_weekday_day * day_rate) + ((weekday_evening + weekend_day + weekend_evening) * evening_rate)
-        total_payment = settings.get('minimumWage', 0) + overtime_payment
+        total_payment = minimum_wage + overtime_payment
         calculation_details = f"{working_days} iş günü için {expected_hours} saat düşüldü."
 
     # Sabit Maaş
@@ -384,16 +389,34 @@ def calculate_payment_for_employee(emp, year_month, logs, custom_holidays, setti
         total_payment = fixed_salary + overtime_payment
         calculation_details = "Hafta sonu ve tatil günleri nöbet ücreti olarak eklendi."
 
+    # Asgari Ücret + Sabit Fazla Mesai Saati
+    elif payment_type == 'asgari_ucret_sabit_saat':
+        overtime_hours = fixed_hours
+        # Sabit saat hesaplamasında genellikle fazla mesai katsayısı (akşam ücreti) kullanılır
+        # Ancak kullanıcı belirtmediyse standart gündüz veya akşam tarifesi üzerinden gidilebilir.
+        # Varsayılan olarak akşam tarifesini kullanıyoruz (daha yaygın).
+        overtime_payment = fixed_hours * evening_rate
+        total_payment = minimum_wage + overtime_payment
+        calculation_details = f"Sabit {fixed_hours} saat fazla mesai (akşam tarifesi) eklendi."
+
+    # Asgari Ücret + Sabit Fazla Mesai Ücreti
+    elif payment_type == 'asgari_ucret_sabit_ucret':
+        overtime_hours = 0 # Saat üzerinden hesaplanmıyor
+        overtime_payment = fixed_overtime_pay
+        total_payment = minimum_wage + fixed_overtime_pay
+        calculation_details = "Sabit fazla mesai ücreti eklendi."
+
     return {
         'emp_id': emp['id'], 'name': emp['name'], 'empId': emp['emp_id'],
         'paymentType': payment_type, 'fixedSalary': fixed_salary,
+        'fixedHours': fixed_hours, 'fixedOvertimePay': fixed_overtime_pay,
         'weekdayDayHours': weekday_day, 'weekdayEveningHours': weekday_evening,
         'weekendDayHours': weekend_day, 'weekendEveningHours': weekend_evening,
         'totalHours': weekday_day + weekday_evening + weekend_day + weekend_evening,
         'overtimeHours': overtime_hours,
         'overtimePayment': overtime_payment,
         'totalPayment': total_payment,
-        'minimumWage': settings.get('minimumWage', 0) if payment_type == 'asgari_ucret_fazla_mesai' else 0,
+        'minimumWage': minimum_wage if payment_type in ['asgari_ucret_fazla_mesai', 'asgari_ucret_sabit_saat', 'asgari_ucret_sabit_ucret'] else 0,
         'calculationDetails': calculation_details
     }
 
@@ -426,7 +449,7 @@ def export_all_data():
     conn = get_db_connection()
 
     # Verileri çek
-    employees = conn.execute("SELECT id, name, emp_id, payment_type, fixed_salary FROM employees ORDER BY name").fetchall()
+    employees = conn.execute("SELECT id, name, emp_id, payment_type, fixed_salary, fixed_hours, fixed_overtime_pay FROM employees ORDER BY name").fetchall()
     work_logs = conn.execute("""
         SELECT e.name, w.date, w.day_hours, w.evening_hours, w.sunday_reason
         FROM work_logs w JOIN employees e ON w.employee_id = e.id
@@ -442,9 +465,9 @@ def export_all_data():
     # Çalışanlar Sayfası
     ws_employees = wb.active
     ws_employees.title = "Çalışanlar"
-    ws_employees.append(['ID', 'Ad Soyad', 'Çalışan No', 'Ödeme Tipi', 'Sabit Maaş'])
+    ws_employees.append(['ID', 'Ad Soyad', 'Çalışan No', 'Ödeme Tipi', 'Sabit Maaş', 'Sabit Saat', 'Sabit FM Ücreti'])
     for emp in employees:
-        ws_employees.append([emp['id'], emp['name'], emp['emp_id'], emp['payment_type'], emp['fixed_salary']])
+        ws_employees.append([emp['id'], emp['name'], emp['emp_id'], emp['payment_type'], emp['fixed_salary'], emp['fixed_hours'], emp['fixed_overtime_pay']])
 
     # Çalışma Saatleri Sayfası
     ws_worklogs = wb.create_sheet("Çalışma Saatleri")

@@ -18,9 +18,23 @@ def init_db():
             name TEXT NOT NULL,
             emp_id TEXT,
             payment_type TEXT DEFAULT 'asgari_ucret_fazla_mesai',
-            fixed_salary REAL DEFAULT 0
+            fixed_salary REAL DEFAULT 0,
+            fixed_hours REAL DEFAULT 0,
+            fixed_overtime_pay REAL DEFAULT 0
         )
     ''')
+
+    # Mevcut tabloya yeni kolonları ekle (Migration)
+    cursor.execute("PRAGMA table_info(employees)")
+    columns = [info[1] for info in cursor.fetchall()]
+
+    if 'fixed_hours' not in columns:
+        print("Migrating: Adding fixed_hours column to employees table...")
+        cursor.execute("ALTER TABLE employees ADD COLUMN fixed_hours REAL DEFAULT 0")
+
+    if 'fixed_overtime_pay' not in columns:
+        print("Migrating: Adding fixed_overtime_pay column to employees table...")
+        cursor.execute("ALTER TABLE employees ADD COLUMN fixed_overtime_pay REAL DEFAULT 0")
 
     # Work Logs tablosu
     cursor.execute('''
