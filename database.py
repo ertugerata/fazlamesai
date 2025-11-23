@@ -1,8 +1,14 @@
 import sqlite3
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DB_FILE = os.getenv('DATABASE_FILE', 'overtime.db')
 
 def get_db_connection():
     """Veritabanına bir bağlantı oluşturur ve döner."""
-    conn = sqlite3.connect('overtime.db')
+    conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -153,6 +159,10 @@ def init_db():
     conn.close()
 
 if __name__ == '__main__':
-    print("Veritabanı başlatılıyor...")
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    logger.info(f"Veritabanı başlatılıyor... (Dosya: {DB_FILE})")
     init_db()
-    print("Veritabanı başarıyla başlatıldı ve tablolar oluşturuldu.")
+    logger.info("Veritabanı başarıyla başlatıldı ve tablolar oluşturuldu.")
